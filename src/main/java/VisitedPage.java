@@ -8,10 +8,10 @@ public class VisitedPage implements Comparable<VisitedPage> {
     private final static long DEFAULT_WAIT_TIME = 2 * 24 * 60 * 60 * 1000;
     private final URI url;
     private Date lastModified;
-    private long waitTimeBeforeNextCrawlMillis;
     private Date nextScheduledCrawl;
 
     public VisitedPage(URI url, Date lastModified) {
+        long waitTimeBeforeNextCrawlMillis;
         this.url = url;
         if (lastModified != null) {
             this.lastModified = lastModified;
@@ -35,6 +35,7 @@ public class VisitedPage implements Comparable<VisitedPage> {
     }
 
     public void update(Date lastModified) {
+        long waitTimeBeforeNextCrawlMillis;
         if (lastModified == null) {
             this.lastModified = null;
             waitTimeBeforeNextCrawlMillis = DEFAULT_WAIT_TIME;
