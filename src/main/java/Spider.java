@@ -14,11 +14,13 @@ public class Spider extends Thread {
 
     private Frontier frontier;
     private VisitedPages visitedPages;
+    private Storage storage;
     private static int WAIT_BEFORE_QUIT_MILLIS = 20000;
 
-    public Spider(Frontier frontier, VisitedPages visitedPages) {
+    public Spider(Frontier frontier, VisitedPages visitedPages, Storage storage) {
         this.frontier = frontier;
         this.visitedPages = visitedPages;
+        this.storage = storage;
     }
 
     @Override
@@ -66,7 +68,7 @@ public class Spider extends Thread {
                     Set<String> links = Collections.newSetFromMap(new ConcurrentHashMap<>());
                     // forward the content to the parser
                     String content = Parser.parse(document, links);
-                    Storage.insertInDB(uri, content);
+                    storage.insertCrawlResult(uri, content);
                     // filter all found urls and add them to the frontier
                     visitedPages.contain(links);
                     frontier.insertURLS(links);
