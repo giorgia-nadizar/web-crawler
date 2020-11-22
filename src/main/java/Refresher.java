@@ -24,9 +24,10 @@ public class Refresher extends Thread {
     @Override
     public void run() {
         System.out.println("Hi! I am thread " + currentThread().getId() + ". I will be the refresher!");
-        while (true) {
+        while (System.currentTimeMillis() < Main.STOP_TIME_MILLIS) {
             frontier.insertSeenURLToRefresh(visitedPages.getNextPageToRefresh());
         }
+        System.out.println("Bye! Refresher thread " + currentThread().getId() + " stops here.");
     }
 
 }

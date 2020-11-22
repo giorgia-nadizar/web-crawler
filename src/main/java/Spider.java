@@ -26,7 +26,7 @@ public class Spider extends Thread {
     @Override
     public void run() {
         System.out.println("Hi! I am thread " + currentThread().getId());
-        while (true) {
+        while (System.currentTimeMillis() < Main.STOP_TIME_MILLIS) {
             URI uri = frontier.getNextURL();
             if (uri == null) {
                 System.out.println("Empty frontier, thread " + currentThread().getId() + " will stop here");
@@ -43,7 +43,6 @@ public class Spider extends Thread {
                 // if we get here there is no existing robots.txt file for that host
                 //e.printStackTrace();
             }
-            //System.out.println(uri);
             HttpConnection connection = new HttpConnection();
             connection.url(uri.toString());
             //if a redirection occurs, it stops
@@ -84,6 +83,7 @@ public class Spider extends Thread {
                 frontier.updateHeap(uri.getHost(), responseTime);
             }
         }
+        System.out.println("Bye! Spider thread " + currentThread().getId() + " stops here.");
     }
 
 }

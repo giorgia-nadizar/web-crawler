@@ -6,6 +6,11 @@ import java.util.stream.Stream;
 
 public class Storage {
 
+    // FUTURE DEVELOPMENT IDEAS
+    // each thread could use their own file to write onto (no need for sync)
+    // at the end of the process each file will be closed
+    // and they will be merged into one common file
+
     private BufferedWriter bufferedWriter;
 
     public Storage(String filename) throws IOException {

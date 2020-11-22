@@ -158,6 +158,7 @@ public class Frontier {
             moveFromFrontQueueToBackQueue();
         } catch (EmptyFrontQueuesException e) {
             //e.printStackTrace();
+            return null;
         }
         return getNextURL();
 
