@@ -9,7 +9,7 @@ import java.util.regex.Pattern;
 public class Parser {
 
     // Pattern for recognizing a URL, based off RFC 3986
-    private static final Pattern urlPattern = Pattern.compile(
+    private static final Pattern URL_PATTERN = Pattern.compile(
             "https?:\\/\\/(www\\.)?[-a-zA-Z0-9@:%._\\+~#=]{1,256}\\.[a-zA-Z0-9()]{1,6}\\b([-a-zA-Z0-9()@:%_\\+.~#?&=]*)",
             Pattern.CASE_INSENSITIVE | Pattern.MULTILINE | Pattern.DOTALL);
 
@@ -24,7 +24,7 @@ public class Parser {
         // extract the text content of the page
         String content = document.body().text();
         // make sure there aren't missed urls in the text
-        Matcher matcher = urlPattern.matcher(content);
+        Matcher matcher = URL_PATTERN.matcher(content);
         while (matcher.find()) {
             System.out.println(matcher.group());
             links.add(matcher.group());

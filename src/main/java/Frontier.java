@@ -69,7 +69,7 @@ public class Frontier {
         if (uri.getScheme().equals("http") || uri.getScheme().equals("https")) {
             if (pendingUrls.add(uri)) {
                 // here I should give very high priority
-                prioritiser.addToQueue(uri, frontQueues);
+                prioritiser.addToQueueHighPriority(uri, frontQueues);
             }
 
         }
@@ -246,10 +246,6 @@ public class Frontier {
         HeapEntry entry = new HeapEntry(host, delayMillis);
         heap.remove(entry);
         heap.add(entry);
-    }
-
-    public void updateHeap(String host) {
-        updateHeap(host, MIN_WAIT_TIME_MILLIS);
     }
 
     public void removeFromPending(URI uri) {

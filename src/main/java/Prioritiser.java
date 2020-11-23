@@ -80,4 +80,9 @@ public class Prioritiser {
         queues.get(random.nextInt(queues.size())).add(uri);
     }
 
+    public void addToQueueHighPriority(URI uri, ArrayList<ConcurrentLinkedQueue<URI>> queues) {
+        Random random = new Random();
+        queues.get(random.nextInt(queues.size() / 2) + queues.size() - queues.size() / 2).add(uri);
+    }
+
 }
