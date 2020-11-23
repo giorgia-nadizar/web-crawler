@@ -11,21 +11,6 @@ public class Prioritiser {
     public Prioritiser(int f) {
         F = f;
         probabilityDistribution = createProbabilityDistribution(f);
-        /*int probLength = 0;
-        for (int i = 1; i <= F; i++) {
-            probLength += i;
-        }
-        int numberToWrite = 1;
-        int occurrences = 0;
-        probabilityDistribution = new int[probLength];
-        for (int i = 0; i < probLength; i++) {
-            if (occurrences >= numberToWrite) {
-                numberToWrite += 1;
-                occurrences = 0;
-            }
-            probabilityDistribution[i] = numberToWrite;
-            occurrences += 1;
-        }*/
     }
 
     private int[] createProbabilityDistribution(int size) {

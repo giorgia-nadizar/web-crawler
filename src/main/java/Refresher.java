@@ -1,16 +1,3 @@
-import com.panforge.robotstxt.RobotsTxt;
-import org.jsoup.Connection;
-import org.jsoup.helper.HttpConnection;
-import org.jsoup.nodes.Document;
-
-import java.io.IOException;
-import java.io.InputStream;
-import java.net.URI;
-import java.net.URL;
-import java.util.Collections;
-import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
-
 public class Refresher extends Thread {
 
     private Frontier frontier;
@@ -24,7 +11,7 @@ public class Refresher extends Thread {
     @Override
     public void run() {
         System.out.println("Hi! I am thread " + currentThread().getId() + ". I will be the refresher!");
-        while (System.currentTimeMillis() < Main.STOP_TIME_MILLIS) {
+        while (System.currentTimeMillis() < Config.STOP_TIME_MILLIS) {
             frontier.insertSeenURLToRefresh(visitedPages.getNextPageToRefresh());
         }
         System.out.println("Bye! Refresher thread " + currentThread().getId() + " stops here.");

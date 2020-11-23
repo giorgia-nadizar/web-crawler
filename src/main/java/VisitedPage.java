@@ -4,8 +4,6 @@ import java.util.Objects;
 
 public class VisitedPage implements Comparable<VisitedPage> {
 
-    // two days
-    private final static long DEFAULT_WAIT_TIME = 2 * 24 * 60 * 60 * 1000;
     private final URI url;
     private Date lastModified;
     private Date nextScheduledCrawl;
@@ -17,7 +15,7 @@ public class VisitedPage implements Comparable<VisitedPage> {
             this.lastModified = lastModified;
             waitTimeBeforeNextCrawlMillis = (new Date()).getTime() - lastModified.getTime();
         } else {
-            waitTimeBeforeNextCrawlMillis = DEFAULT_WAIT_TIME;
+            waitTimeBeforeNextCrawlMillis = Config.DEFAULT_WAIT_TIME_BEFORE_RECRAWL;
         }
         nextScheduledCrawl = new Date(System.currentTimeMillis() + waitTimeBeforeNextCrawlMillis);
     }
@@ -38,7 +36,7 @@ public class VisitedPage implements Comparable<VisitedPage> {
         long waitTimeBeforeNextCrawlMillis;
         if (lastModified == null) {
             this.lastModified = null;
-            waitTimeBeforeNextCrawlMillis = DEFAULT_WAIT_TIME;
+            waitTimeBeforeNextCrawlMillis = Config.DEFAULT_WAIT_TIME_BEFORE_RECRAWL;
         } else {
             // if the page was not modified increase the wait time
             if (this.lastModified.equals(lastModified)) {

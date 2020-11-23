@@ -7,12 +7,6 @@ import java.util.concurrent.PriorityBlockingQueue;
 
 public class Frontier {
 
-    private static final int MAX_URL_SIZE = 256;
-    private static final int MIN_WAIT_TIME_MILLIS = 200;
-    private static final int MAX_URLS_PER_HOST = 100;
-    private static int WAIT_BEFORE_RETRY_MILLIS = 20000;
-    private static int MAX_WAIT_ATTEMPTS = 2;
-
     private final Prioritiser prioritiser;
     private final ArrayList<ConcurrentLinkedQueue<URI>> frontQueues;
     private final ConcurrentHashMap<String, ConcurrentLinkedQueue<URI>> backQueues;
@@ -83,7 +77,7 @@ public class Frontier {
 
     public void insertURL(String url) {
         // check needed to avoid spider traps
-        if (url.length() > MAX_URL_SIZE) {
+        if (url.length() > Config.MAX_URL_SIZE) {
             return;
         }
         //create URI
@@ -106,7 +100,7 @@ public class Frontier {
                 if (urlsForThisHost == null) {
                     urlsForThisHost = 0;
                 }
-                if (urlsForThisHost < MAX_URLS_PER_HOST) {
+                if (urlsForThisHost < Config.MAX_URLS_PER_HOST) {
                     urlsPerHost.put(uri.getHost(), urlsForThisHost + 1);
                 } else {
                     return;
@@ -205,12 +199,12 @@ public class Frontier {
                     break;
                 } else {
                     // if we reach the max allowed attempts we throw an exception and we stop
-                    if (waitAttempts == MAX_WAIT_ATTEMPTS) {
+                    if (waitAttempts == Config.MAX_WAIT_ATTEMPTS) {
                         throw new EmptyFrontQueuesException("All front queues are empty, impossible to draw url");
                     } else {
                         //we wait and we redo this procedure
                         try {
-                            Thread.sleep(WAIT_BEFORE_RETRY_MILLIS);
+                            Thread.sleep(Config.WAIT_BEFORE_RETRY_MILLIS);
                         } catch (InterruptedException e) {
                             Thread.currentThread().interrupt();
                             throw new AssertionError(e);
@@ -240,8 +234,8 @@ public class Frontier {
     // in the heap (which means it has a shorter delay set), we delete it
     // and insert the new version with longer waiting time
     public synchronized void updateHeap(String host, long delayMillis) {
-        if (delayMillis < MIN_WAIT_TIME_MILLIS) {
-            delayMillis = MIN_WAIT_TIME_MILLIS;
+        if (delayMillis < Config.MIN_WAIT_TIME_MILLIS) {
+            delayMillis = Config.MIN_WAIT_TIME_MILLIS;
         }
         HeapEntry entry = new HeapEntry(host, delayMillis);
         heap.remove(entry);

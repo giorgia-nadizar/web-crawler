@@ -55,9 +55,9 @@ public class VisitedPages {
         visitedPages.put(visitedPage);
     }
 
-    public void contain(Set<String> urls) {
+    public void filterAlreadyVisitedUrls(Set<String> urls) {
         for (String url : urls) {
-            if (contains(url)) {
+            if (alreadyVisited(url)) {
                 urls.remove(url);
             }
         }
@@ -67,7 +67,7 @@ public class VisitedPages {
     //for each checks if it has been visited already
     //then checks if the host has a robot policy specified (we'll have a table for that)
     //then forwards them to the frontier to add them
-    private boolean contains(String url) {
+    private boolean alreadyVisited(String url) {
         URI uri = null;
         try {
             uri = new URI(url);

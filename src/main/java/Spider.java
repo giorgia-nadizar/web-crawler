@@ -15,7 +15,6 @@ public class Spider extends Thread {
     private Frontier frontier;
     private VisitedPages visitedPages;
     private Storage storage;
-    private static int WAIT_BEFORE_QUIT_MILLIS = 20000;
 
     public Spider(Frontier frontier, VisitedPages visitedPages, Storage storage) {
         this.frontier = frontier;
@@ -23,31 +22,39 @@ public class Spider extends Thread {
         this.storage = storage;
     }
 
+    // checks if the given URI is allowed by robots.txt
+    private boolean isAllowedByRobots(URI uri) {
+        try (InputStream robotsTxtStream = new URL("https://" + uri.getHost() + "/robots.txt").openStream()) {
+            RobotsTxt robotsTxt = RobotsTxt.read(robotsTxtStream);
+            if (!robotsTxt.query(null, uri.getPath())) {
+                // robots.txt doesn't grant access to this url
+                return false;
+            }
+        } catch (IOException e) {
+            // if we get here there is no existing robots.txt file for that host
+            //e.printStackTrace();
+        }
+        return true;
+    }
+
     @Override
     public void run() {
         System.out.println("Hi! I am thread " + currentThread().getId());
-        while (System.currentTimeMillis() < Main.STOP_TIME_MILLIS) {
+        while (System.currentTimeMillis() < Config.STOP_TIME_MILLIS) {
             URI uri = frontier.getNextURL();
             if (uri == null) {
                 System.out.println("Empty frontier, thread " + currentThread().getId() + " will stop here");
                 break;
             }
-            // check if allowed by robots.txt
-            try (InputStream robotsTxtStream = new URL("https://" + uri.getHost() + "/robots.txt").openStream()) {
-                RobotsTxt robotsTxt = RobotsTxt.read(robotsTxtStream);
-                if (!robotsTxt.query(null, uri.getPath())) {
-                    // robots.txt doesn't grant access to this url
-                    continue;
-                }
-            } catch (IOException e) {
-                // if we get here there is no existing robots.txt file for that host
-                //e.printStackTrace();
+            // if the uri is not allowed, skip it
+            // remember to always update the frontier
+            if (!isAllowedByRobots(uri)) {
+                frontier.removeFromPending(uri);
+                frontier.updateHeap(uri.getHost(), Config.MIN_WAIT_TIME_MILLIS);
+                continue;
             }
             HttpConnection connection = new HttpConnection();
-            connection.url(uri.toString());
-            //if a redirection occurs, it stops
-            connection.followRedirects(false);
-            connection.ignoreHttpErrors(true);
+            connection.url(uri.toString()).followRedirects(false).ignoreHttpErrors(true);
             Connection.Response response;
             long responseTime = 0;
             String lastModified = null;
@@ -56,20 +63,18 @@ public class Spider extends Thread {
                 response = connection.execute();
                 long stopTime = System.currentTimeMillis();
                 responseTime = stopTime - startTime;
-                int responseCode = response.statusCode();
                 lastModified = response.header("Last-Modified");
-                //System.out.println(responseCode);
-                if (responseCode >= 300 && responseCode < 400) {
+                if (response.statusCode() >= 300 && response.statusCode() < 400) {
                     System.out.println("Redirection to " + response.header("Location"));
                 }
-                if (responseCode >= 200 && responseCode < 300) {
+                if (response.statusCode() >= 200 && response.statusCode() < 300) {
                     Document document = response.parse();
                     Set<String> links = Collections.newSetFromMap(new ConcurrentHashMap<>());
                     // forward the content to the parser
                     String content = Parser.parse(document, links);
                     storage.insertCrawlResult(uri, content);
                     // filter all found urls and add them to the frontier
-                    visitedPages.contain(links);
+                    visitedPages.filterAlreadyVisitedUrls(links);
                     frontier.insertURLS(links);
                 }
             } catch (IOException e) {
@@ -77,7 +82,6 @@ public class Spider extends Thread {
                 // page is not supported (not text/* or application/xml or application/*+xml)
                 e.printStackTrace();
             } finally {
-                // add to visited urls
                 visitedPages.add(uri, lastModified);
                 frontier.removeFromPending(uri);
                 frontier.updateHeap(uri.getHost(), responseTime);
