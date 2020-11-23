@@ -84,7 +84,7 @@ public class Spider extends Thread {
             } finally {
                 visitedPages.add(uri, lastModified);
                 frontier.removeFromPending(uri);
-                frontier.updateHeap(uri.getHost(), responseTime);
+                frontier.updateHeap(uri.getHost(), 10 * responseTime);
             }
         }
         System.out.println("Bye! Spider thread " + currentThread().getId() + " stops here.");
