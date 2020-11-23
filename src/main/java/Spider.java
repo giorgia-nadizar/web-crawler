@@ -81,13 +81,13 @@ public class Spider extends Thread {
                 // we can fall here for various reasons, for example the content of the
                 // page is not supported (not text/* or application/xml or application/*+xml)
                 //e.printStackTrace();
-            } finally {
-                if (visitedPages.addAndReturnIfModified(uri, lastModified) && content != null) {
-                    storage.insertCrawlResult(uri, content);
-                }
-                frontier.removeFromPending(uri);
-                frontier.updateHeap(uri.getHost(), 10 * responseTime);
             }
+            if (visitedPages.addAndReturnIfModified(uri, lastModified) && content != null) {
+                storage.insertCrawlResult(uri, content);
+            }
+            frontier.removeFromPending(uri);
+            frontier.updateHeap(uri.getHost(), 10 * responseTime);
+            
         }
         System.out.println("Bye! Spider thread " + currentThread().getId() + " stops here.");
     }

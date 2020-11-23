@@ -53,7 +53,7 @@ public class VisitedPages {
     }
 
     public boolean addAndReturnIfModified(URI uri, String lastModified) {
-        boolean modified = false;
+        boolean modified = true;
         Date lastMod = null;
         if (lastModified != null) {
             try {
