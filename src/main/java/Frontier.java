@@ -234,8 +234,8 @@ public class Frontier {
     // in the heap (which means it has a shorter delay set), we delete it
     // and insert the new version with longer waiting time
     public synchronized void updateHeap(String host, long delayMillis) {
-        if (delayMillis < Config.MIN_WAIT_TIME_MILLIS) {
-            delayMillis = Config.MIN_WAIT_TIME_MILLIS;
+        if (delayMillis < Config.MIN_WAIT_TIME_BEFORE_RECONTACTING_HOST_MILLIS) {
+            delayMillis = Config.MIN_WAIT_TIME_BEFORE_RECONTACTING_HOST_MILLIS;
         }
         HeapEntry entry = new HeapEntry(host, delayMillis);
         heap.remove(entry);

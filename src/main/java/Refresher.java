@@ -1,7 +1,7 @@
 public class Refresher extends Thread {
 
-    private Frontier frontier;
-    private VisitedPages visitedPages;
+    private final Frontier frontier;
+    private final VisitedPages visitedPages;
 
     public Refresher(Frontier frontier, VisitedPages visitedPages) {
         this.frontier = frontier;

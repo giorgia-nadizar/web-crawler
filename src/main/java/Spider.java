@@ -12,9 +12,9 @@ import java.util.concurrent.ConcurrentHashMap;
 
 public class Spider extends Thread {
 
-    private Frontier frontier;
-    private VisitedPages visitedPages;
-    private Storage storage;
+    private final Frontier frontier;
+    private final VisitedPages visitedPages;
+    private final Storage storage;
 
     public Spider(Frontier frontier, VisitedPages visitedPages, Storage storage) {
         this.frontier = frontier;
@@ -50,7 +50,7 @@ public class Spider extends Thread {
             // remember to always update the frontier
             if (!isAllowedByRobots(uri)) {
                 frontier.removeFromPending(uri);
-                frontier.updateHeap(uri.getHost(), Config.MIN_WAIT_TIME_MILLIS);
+                frontier.updateHeap(uri.getHost(), Config.MIN_WAIT_TIME_BEFORE_RECONTACTING_HOST_MILLIS);
                 continue;
             }
             HttpConnection connection = new HttpConnection();
@@ -80,7 +80,7 @@ public class Spider extends Thread {
             } catch (IOException e) {
                 // we can fall here for various reasons, for example the content of the
                 // page is not supported (not text/* or application/xml or application/*+xml)
-                e.printStackTrace();
+                //e.printStackTrace();
             } finally {
                 if (visitedPages.addAndReturnIfModified(uri, lastModified) && content != null) {
                     storage.insertCrawlResult(uri, content);

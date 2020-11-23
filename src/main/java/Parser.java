@@ -26,7 +26,6 @@ public class Parser {
         // make sure there aren't missed urls in the text
         Matcher matcher = URL_PATTERN.matcher(content);
         while (matcher.find()) {
-            System.out.println(matcher.group());
             links.add(matcher.group());
         }
         // return the page content

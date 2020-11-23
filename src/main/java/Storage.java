@@ -11,7 +11,7 @@ public class Storage {
     // at the end of the process each file will be closed
     // and they will be merged into one common file
 
-    private BufferedWriter bufferedWriter;
+    private final BufferedWriter bufferedWriter;
 
     public Storage(String filename) throws IOException {
         File fout = new File(filename);

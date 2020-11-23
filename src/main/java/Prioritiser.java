@@ -13,9 +13,9 @@ public class Prioritiser {
         probabilityDistribution = createProbabilityDistribution(f);
     }
 
-    private int[] createProbabilityDistribution(int size) {
+    private static int[] createProbabilityDistribution(int size) {
         int probLength = 0;
-        for (int i = 1; i <= F; i++) {
+        for (int i = 1; i <= size; i++) {
             probLength += i;
         }
         int numberToWrite = 1;
@@ -42,7 +42,6 @@ public class Prioritiser {
     public ConcurrentLinkedQueue<URI> selectQueueToDrawFrom(ArrayList<ConcurrentLinkedQueue<URI>> queues) {
         Random random = new Random();
         if (queues.size() != F) {
-            System.out.println("I don't know what to do, I'll just give you a random one");
             return queues.get(random.nextInt(queues.size()));
         } else {
             return queues.get(probabilityDistribution[random.nextInt(probabilityDistribution.length)] - 1);
