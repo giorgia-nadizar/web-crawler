@@ -32,7 +32,8 @@ public class VisitedPage implements Comparable<VisitedPage> {
         return nextScheduledCrawl;
     }
 
-    public void update(Date lastModified) {
+    public boolean update(Date lastModified) {
+        boolean modified = false;
         long waitTimeBeforeNextCrawlMillis;
         if (lastModified == null) {
             this.lastModified = null;
@@ -42,12 +43,14 @@ public class VisitedPage implements Comparable<VisitedPage> {
             if (this.lastModified.equals(lastModified)) {
                 waitTimeBeforeNextCrawlMillis = (new Date()).getTime() - lastModified.getTime();
             } else {
+                modified = true;
                 // estimate the change rate with the time passed between two modifications
                 waitTimeBeforeNextCrawlMillis = lastModified.getTime() - this.lastModified.getTime();
             }
             this.lastModified = lastModified;
         }
         nextScheduledCrawl = new Date(System.currentTimeMillis() + waitTimeBeforeNextCrawlMillis);
+        return modified;
     }
 
     @Override

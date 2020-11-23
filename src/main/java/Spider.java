@@ -58,6 +58,7 @@ public class Spider extends Thread {
             Connection.Response response;
             long responseTime = 0;
             String lastModified = null;
+            String content = null;
             try {
                 long startTime = System.currentTimeMillis();
                 response = connection.execute();
@@ -71,8 +72,7 @@ public class Spider extends Thread {
                     Document document = response.parse();
                     Set<String> links = Collections.newSetFromMap(new ConcurrentHashMap<>());
                     // forward the content to the parser
-                    String content = Parser.parse(document, links);
-                    storage.insertCrawlResult(uri, content);
+                    content = Parser.parse(document, links);
                     // filter all found urls and add them to the frontier
                     visitedPages.filterAlreadyVisitedUrls(links);
                     frontier.insertURLS(links);
@@ -82,7 +82,9 @@ public class Spider extends Thread {
                 // page is not supported (not text/* or application/xml or application/*+xml)
                 e.printStackTrace();
             } finally {
-                visitedPages.add(uri, lastModified);
+                if (visitedPages.addAndReturnIfModified(uri, lastModified) && content != null) {
+                    storage.insertCrawlResult(uri, content);
+                }
                 frontier.removeFromPending(uri);
                 frontier.updateHeap(uri.getHost(), 10 * responseTime);
             }

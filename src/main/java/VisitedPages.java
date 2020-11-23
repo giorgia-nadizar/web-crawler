@@ -33,7 +33,8 @@ public class VisitedPages {
         return page.getUrl();
     }
 
-    public void add(URI uri, String lastModified) {
+    public boolean addAndReturnIfModified(URI uri, String lastModified) {
+        boolean modified = false;
         Date lastMod = null;
         if (lastModified != null) {
             try {
@@ -46,13 +47,14 @@ public class VisitedPages {
         }
         VisitedPage visitedPage;
         if ((visitedPage = pendingPages.get(uri)) != null) {
-            visitedPage.update(lastMod);
+            modified = visitedPage.update(lastMod);
         } else {
             visitedPage = new VisitedPage(uri, lastMod);
         }
         // this row will probably never get executed, just make sure we avoid duplications
         visitedPages.remove(visitedPage);
         visitedPages.put(visitedPage);
+        return modified;
     }
 
     public void filterAlreadyVisitedUrls(Set<String> urls) {
