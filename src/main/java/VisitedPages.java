@@ -10,7 +10,7 @@ import java.util.concurrent.PriorityBlockingQueue;
 
 public class VisitedPages {
 
-    private SimpleDateFormat format = new SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss z", Locale.US);
+    private final SimpleDateFormat format = new SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss z", Locale.US);
     private final PriorityBlockingQueue<VisitedPage> visitedPages;
     private final ConcurrentHashMap<URI, VisitedPage> pendingPages;
 
@@ -22,6 +22,15 @@ public class VisitedPages {
     // this method doesn't need to be synchronized as only one thread will access it
     public URI getNextPageToRefresh() {
         VisitedPage page = visitedPages.poll();
+        if (page == null) {
+            try {
+                Thread.sleep(Config.WAIT_BEFORE_RETRY_MILLIS);
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+                throw new AssertionError(e);
+            }
+            return getNextPageToRefresh();
+        }
         pendingPages.put(page.getUrl(), page);
         // wait necessary time
         try {
@@ -58,11 +67,7 @@ public class VisitedPages {
     }
 
     public void filterAlreadyVisitedUrls(Set<String> urls) {
-        for (String url : urls) {
-            if (alreadyVisited(url)) {
-                urls.remove(url);
-            }
-        }
+        urls.removeIf(this::alreadyVisited);
     }
 
     //receives URLS
@@ -70,17 +75,14 @@ public class VisitedPages {
     //then checks if the host has a robot policy specified (we'll have a table for that)
     //then forwards them to the frontier to add them
     private boolean alreadyVisited(String url) {
-        URI uri = null;
+        URI uri;
         try {
             uri = new URI(url);
         } catch (URISyntaxException e) {
             //e.printStackTrace();
             return true;
         }
-        if (visitedPages.contains(new VisitedPage(uri)) || pendingPages.containsKey(uri)) {
-            return true;
-        }
-        return false;
+        return visitedPages.contains(new VisitedPage(uri)) || pendingPages.containsKey(uri);
     }
 
 }
