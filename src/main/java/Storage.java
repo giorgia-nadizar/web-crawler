@@ -1,3 +1,6 @@
+import io.lettuce.core.RedisClient;
+import io.lettuce.core.api.StatefulRedisConnection;
+
 import java.io.*;
 import java.net.URI;
 import java.util.Date;
@@ -11,26 +14,24 @@ public class Storage {
     // at the end of the process each file will be closed
     // and they will be merged into one common file
 
-    private final BufferedWriter bufferedWriter;
+    private final RedisClient client;
+    private final StatefulRedisConnection<String, String> connection;
 
-    public Storage(String filename) throws IOException {
-        File fout = new File(filename);
-        FileOutputStream fos = new FileOutputStream(fout);
-        bufferedWriter = new BufferedWriter(new OutputStreamWriter(fos));
+    public Storage() {
+        client = RedisClient.create("redis://localhost");
+        connection = client.connect();
     }
 
-    public void closeWriter() throws IOException {
-        this.bufferedWriter.close();
+    public void close() {
+        this.connection.close();
+        this.client.shutdown();
     }
 
     public synchronized void insertCrawlResult(URI uri, String content) {
-        try {
-            System.out.println(uri + " -> " + content);
-            bufferedWriter.write(convertToCSV(uri.toString(), (new Date()).toString(), content));
-            bufferedWriter.newLine();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        System.out.println(uri + " -> " + content);
+        connection.async().set(uri.toString(), convertToCSV(content));
+        //uncomment next line to add timestamping
+        //connection.async().set(uri.toString() + ":time", convertToCSV(content));
     }
 
     private static String escapeSpecialCharacters(String data) {
