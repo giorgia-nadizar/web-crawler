@@ -2,34 +2,16 @@ import java.net.URI;
 import java.util.ArrayList;
 import java.util.Random;
 import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.stream.IntStream;
 
 public class Prioritiser {
 
     private final int F;
-    private final int[] probabilityDistribution;
+    private final int sumOfF;
 
     public Prioritiser(int f) {
         F = f;
-        probabilityDistribution = createProbabilityDistribution(f);
-    }
-
-    private static int[] createProbabilityDistribution(int size) {
-        int probLength = 0;
-        for (int i = 1; i <= size; i++) {
-            probLength += i;
-        }
-        int numberToWrite = 1;
-        int occurrences = 0;
-        int[] probDistribution = new int[probLength];
-        for (int i = 0; i < probLength; i++) {
-            if (occurrences >= numberToWrite) {
-                numberToWrite += 1;
-                occurrences = 0;
-            }
-            probDistribution[i] = numberToWrite;
-            occurrences += 1;
-        }
-        return probDistribution;
+        sumOfF = IntStream.range(1, F + 1).sum();
     }
 
     public int getF() {
@@ -41,7 +23,13 @@ public class Prioritiser {
         if (l != F) {
             return random.nextInt(l);
         } else {
-            return (probabilityDistribution[random.nextInt(probabilityDistribution.length)] - 1);
+            int rd = random.nextInt(sumOfF) + 1;
+            int drawnValue = F;
+            while (rd > 0) {
+                rd -= drawnValue;
+                drawnValue -= 1;
+            }
+            return drawnValue;
         }
     }
 
