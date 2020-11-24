@@ -32,20 +32,23 @@ public class Prioritiser {
         return probDistribution;
     }
 
-
     public int getF() {
         return F;
+    }
+
+    public int getQueueIndex(int l) {
+        Random random = new Random();
+        if (l != F) {
+            return random.nextInt(l);
+        } else {
+            return (probabilityDistribution[random.nextInt(probabilityDistribution.length)] - 1);
+        }
     }
 
     // selects the new queue with probability proportional to F, if the queues aren't in number of F
     // then this prioritiser can't do anything
     public ConcurrentLinkedQueue<URI> selectQueueToDrawFrom(ArrayList<ConcurrentLinkedQueue<URI>> queues) {
-        Random random = new Random();
-        if (queues.size() != F) {
-            return queues.get(random.nextInt(queues.size()));
-        } else {
-            return queues.get(probabilityDistribution[random.nextInt(probabilityDistribution.length)] - 1);
-        }
+        return queues.get(getQueueIndex(queues.size()));
     }
 
     // used after selectQueueToDrawFrom if we received at least one empty result

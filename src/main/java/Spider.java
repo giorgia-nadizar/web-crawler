@@ -48,13 +48,23 @@ public class Spider extends Thread {
             }
             // if the uri is not allowed, skip it
             // remember to always update the frontier
-            if (!isAllowedByRobots(uri)) {
+            long timeBeforeCheckingRobotsFile = System.currentTimeMillis();
+            boolean isAllowedByRobots = isAllowedByRobots(uri);
+            long timeAfterCheckingRobotsFile = System.currentTimeMillis();
+            if (!isAllowedByRobots) {
                 frontier.removeFromPending(uri);
                 frontier.updateHeap(uri.getHost(), Config.MIN_WAIT_TIME_BEFORE_RECONTACTING_HOST_MILLIS);
                 continue;
             }
+            // sleep for 10 * the time needed to read the robots file to ensure fairness
+            try {
+                Thread.sleep(10 * (timeAfterCheckingRobotsFile - timeBeforeCheckingRobotsFile));
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+                throw new AssertionError(e);
+            }
             HttpConnection connection = new HttpConnection();
-            connection.url(uri.toString()).followRedirects(false).ignoreHttpErrors(true);
+            connection.url(uri.toString()).followRedirects(true).ignoreHttpErrors(true);
             Connection.Response response;
             long responseTime = 0;
             String lastModified = null;
@@ -87,7 +97,6 @@ public class Spider extends Thread {
             }
             frontier.removeFromPending(uri);
             frontier.updateHeap(uri.getHost(), 10 * responseTime);
-            
         }
         System.out.println("Bye! Spider thread " + currentThread().getId() + " stops here.");
     }
