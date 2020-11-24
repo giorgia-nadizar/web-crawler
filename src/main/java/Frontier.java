@@ -76,6 +76,9 @@ public class Frontier {
     }
 
     public void insertURL(String url) {
+        if (url == null || url.length() == 0) {
+            return;
+        }
         // check needed to avoid spider traps
         if (url.length() > Config.MAX_URL_SIZE) {
             return;
