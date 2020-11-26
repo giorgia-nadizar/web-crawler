@@ -27,7 +27,6 @@ public class VisitedPages {
                 Thread.sleep(Config.REFRESHER_WAIT_BEFORE_CHECKING_PAGE_TO_REFRESH_MILLIS);
             } catch (InterruptedException e) {
                 Thread.currentThread().interrupt();
-                throw new AssertionError(e);
             }
             return getNextPageToRefresh();
         }
@@ -36,7 +35,6 @@ public class VisitedPages {
                 Thread.sleep(Config.REFRESHER_WAIT_BEFORE_CHECKING_PAGE_TO_REFRESH_MILLIS);
             } catch (InterruptedException e) {
                 Thread.currentThread().interrupt();
-                throw new AssertionError(e);
             }
             return getNextPageToRefresh();
         }
@@ -47,7 +45,6 @@ public class VisitedPages {
             Thread.sleep(Math.max(0, page.getNextScheduledCrawl().getTime() - (new Date()).getTime()));
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
-            throw new AssertionError(e);
         }
         return page.getUrl();
     }

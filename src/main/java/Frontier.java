@@ -99,7 +99,11 @@ public class Frontier {
         //check if the protocol is http or https
         if (uri.getScheme().equals("http") || uri.getScheme().equals("https")) {
             synchronized (this) {
-                Integer urlsForThisHost = urlsPerHost.get(uri.getHost());
+                String host = uri.getHost();
+                if (host == null) {
+                    return;
+                }
+                Integer urlsForThisHost = urlsPerHost.get(host);
                 if (urlsForThisHost == null) {
                     urlsForThisHost = 0;
                 }
@@ -139,7 +143,6 @@ public class Frontier {
             Thread.sleep(Math.max(0, heapEntry.getNextVisitTime().getTime() - (new Date()).getTime()));
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
-            throw new AssertionError(e);
         }
         //check that host's queue
         ConcurrentLinkedQueue<URI> hostQueue = backQueues.get(host);
@@ -210,7 +213,6 @@ public class Frontier {
                             Thread.sleep(Config.WAIT_BEFORE_RETRY_MILLIS);
                         } catch (InterruptedException e) {
                             Thread.currentThread().interrupt();
-                            throw new AssertionError(e);
                         }
                     }
                 }

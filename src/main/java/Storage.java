@@ -1,7 +1,6 @@
 import io.lettuce.core.RedisClient;
 import io.lettuce.core.api.StatefulRedisConnection;
 
-import java.io.*;
 import java.net.URI;
 import java.util.Date;
 import java.util.stream.Collectors;
@@ -27,8 +26,8 @@ public class Storage {
         this.client.shutdown();
     }
 
-    public synchronized void insertCrawlResult(URI uri, String content) {
-        System.out.println(uri + " -> " + content);
+    public void insertCrawlResult(URI uri, String content) {
+        System.out.println(uri);
         connection.async().set(uri.toString(), convertToCSV(content));
         //uncomment next line to add timestamping
         //connection.async().set(uri.toString() + ":time", convertToCSV(content));

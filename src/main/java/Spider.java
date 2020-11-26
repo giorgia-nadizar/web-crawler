@@ -61,7 +61,6 @@ public class Spider extends Thread {
                 Thread.sleep(10 * (timeAfterCheckingRobotsFile - timeBeforeCheckingRobotsFile));
             } catch (InterruptedException e) {
                 Thread.currentThread().interrupt();
-                throw new AssertionError(e);
             }
             HttpConnection connection = new HttpConnection();
             connection.url(uri.toString()).followRedirects(true).ignoreHttpErrors(true);

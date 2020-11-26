@@ -22,7 +22,11 @@ public class Parser {
             links.add(link.attr("abs:href"));
         }
         // extract the text content of the page
-        String content = document.body().text();
+        Element body = document.body();
+        String content = "";
+        if (body != null) {
+            content += body.text();
+        }
         // make sure there aren't missed urls in the text
         Matcher matcher = URL_PATTERN.matcher(content);
         while (matcher.find()) {
