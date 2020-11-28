@@ -22,21 +22,8 @@ public class VisitedPages {
     // this method doesn't need to be synchronized as only one thread will access it
     public URI getNextPageToRefresh() {
         VisitedPage page = visitedPages.peek();
-        if (page == null) {
-            try {
-                Thread.sleep(Config.REFRESHER_WAIT_BEFORE_CHECKING_PAGE_TO_REFRESH_MILLIS);
-            } catch (InterruptedException e) {
-                Thread.currentThread().interrupt();
-            }
-            return getNextPageToRefresh();
-        }
-        if ((page.getNextScheduledCrawl().getTime() - (new Date()).getTime()) > Config.MAX_WAIT_REFRESHER) {
-            try {
-                Thread.sleep(Config.REFRESHER_WAIT_BEFORE_CHECKING_PAGE_TO_REFRESH_MILLIS);
-            } catch (InterruptedException e) {
-                Thread.currentThread().interrupt();
-            }
-            return getNextPageToRefresh();
+        if (page == null || (page.getNextScheduledCrawl().getTime() - (new Date()).getTime()) > Config.MAX_WAIT_REFRESHER) {
+            return null;
         }
         visitedPages.remove(page);
         pendingPages.put(page.getUrl(), page);

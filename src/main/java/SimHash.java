@@ -2,7 +2,6 @@
 
 import com.hankcs.hanlp.seg.common.Term;
 import com.hankcs.hanlp.tokenizer.StandardTokenizer;
-import org.apache.commons.lang3.StringUtils;
 import org.jsoup.Jsoup;
 import org.jsoup.safety.Whitelist;
 
@@ -12,26 +11,21 @@ import java.util.List;
 import java.util.Map;
 
 public class SimHash {
-    private String tokens; //string
-    private BigInteger strSimHash; // character produced hash value
-    private final int hashbits = 64; // the number of hashes after the word segmentation;
+    private String text;
+    private final BigInteger simHash; // character produced hash value
+    private final int hashBits = 64; // the number of hashes after the word segmentation
 
 
     public SimHash(String tokens) {
-        this.tokens = tokens;
-        this.strSimHash = this.simHash();
+        this.text = tokens;
+        this.simHash = this.simHash();
     }
 
-    /**
-     * Clear html tags
-     *
-     * @param content
-     * @return
-     */
-    private String cleanResume(String content) {
+
+    // Clear html tags
+    private String cleanHtmlTagsAndNormalize(String content) {
         // If the input is HTML, the following will filter out all the HTML tags.
-        content = Jsoup.clean(content, Whitelist.none());
-        content = StringUtils.lowerCase(content);
+        content = Jsoup.clean(content, Whitelist.none()).toLowerCase();
         String[] strings = {" ", "\n", "\r", "\t", "\\r", "\\n", "\\t", "&nbsp;"};
         for (String s : strings) {
             content = content.replaceAll(s, "");
@@ -39,23 +33,20 @@ public class SimHash {
         return content;
     }
 
-    /**
-     * This is a hash calculation of the entire string
-     *
-     * @return
-     */
+    // This is a hash calculation of the entire string
     private BigInteger simHash() {
-        tokens = cleanResume(tokens); // cleanResume removes some special characters
-        int[] v = new int[this.hashbits];
-        List<Term> termList = StandardTokenizer.segment(this.tokens); // Segmentation of strings
-        //Some special treatment of the word segmentation: For example:add weight according to part of speech, filter out punctuation, filter overclocking vocabulary, etc.
-        Map<String, Integer> weightOfNature = new HashMap<String, Integer>(); // weight of part of speech
+        text = cleanHtmlTagsAndNormalize(text);
+        List<Term> tokens = StandardTokenizer.segment(this.text); // Segmentation of strings
+        int[] v = new int[this.hashBits];
+        //Some special treatment of the word segmentation
+        // For example:add weight according to part of speech, filter out punctuation, filter overclocking vocabulary, etc.
+        Map<String, Integer> weightOfNature = new HashMap<>(); // weight of part of speech
         weightOfNature.put("n", 2); //The weight given to the noun is 2;
-        Map<String, String> stopNatures = new HashMap<String, String>();//Deactivated part of speech such as some punctuation;
+        Map<String, String> stopNatures = new HashMap<>();//Deactivated part of speech such as some punctuation;
         stopNatures.put("w", ""); //
         int overCount = 5; //Set the bounds of the overclocked vocabulary;
-        Map<String, Integer> wordCount = new HashMap<String, Integer>();
-        for (Term term : termList) {
+        Map<String, Integer> wordCount = new HashMap<>();
+        for (Term term : tokens) {
             String word = term.word; //word segmentation string
             String nature = term.nature.toString(); // word segmentation attribute;
             // Filter overclocking words
@@ -74,7 +65,7 @@ public class SimHash {
             }
             // 2. Divide each participle hash into a fixed-length sequence. For example, an integer of 64bit.
             BigInteger t = this.hash(word);
-            for (int i = 0; i < this.hashbits; i++) {
+            for (int i = 0; i < this.hashBits; i++) {
                 BigInteger bitmask = new BigInteger("1").shiftLeft(i);
                 // 3. Create an array of integers of length 64 (assuming you want to generate a 64-bit digital fingerprint, or other numbers).
                 // Judge the sequence after each participle hash. If it is 1000...1, then the first and last digits of the array are incremented by 1.
@@ -92,7 +83,7 @@ public class SimHash {
             }
         }
         BigInteger fingerprint = new BigInteger("0");
-        for (int i = 0; i < this.hashbits; i++) {
+        for (int i = 0; i < this.hashBits; i++) {
             if (v[i] >= 0) {
                 fingerprint = fingerprint.add(new BigInteger("1").shiftLeft(i));
             }
@@ -101,18 +92,14 @@ public class SimHash {
     }
 
 
-    /**
-     * Perform a hash calculation on a single participle;
-     *
-     * @param source
-     * @return
-     */
+    // Perform a hash calculation on a single participle;
     private BigInteger hash(String source) {
         if (source == null || source.length() == 0) {
             return new BigInteger("0");
         } else {
-            /**
-             * When the length of the sourece is too short, the hash algorithm will be invalidated, so it is necessary to compensate for too short words.
+            /*
+             * When the length of the source is too short, the hash algorithm will be invalidated,
+             * so it is necessary to compensate for too short words.
              */
             while (source.length() < 3) {
                 source = source + source.charAt(0);
@@ -120,9 +107,9 @@ public class SimHash {
             char[] sourceArray = source.toCharArray();
             BigInteger x = BigInteger.valueOf(((long) sourceArray[0]) << 7);
             BigInteger m = new BigInteger("1000003");
-            BigInteger mask = new BigInteger("2").pow(this.hashbits).subtract(new BigInteger("1"));
+            BigInteger mask = new BigInteger("2").pow(this.hashBits).subtract(new BigInteger("1"));
             for (char item : sourceArray) {
-                BigInteger temp = BigInteger.valueOf((long) item);
+                BigInteger temp = BigInteger.valueOf(item);
                 x = x.multiply(m).xor(temp).and(mask);
             }
             x = x.xor(new BigInteger(String.valueOf(source.length())));
@@ -133,16 +120,11 @@ public class SimHash {
         }
     }
 
-    /**
-     * Calculate the Hamming distance, the smaller the Hamming distance, the more similar;
-     *
-     * @param other
-     * @return
-     */
+    // Calculate the Hamming distance, the smaller the Hamming distance, the more similar;
     private int hammingDistance(SimHash other) {
-        BigInteger m = new BigInteger("1").shiftLeft(this.hashbits).subtract(
+        BigInteger m = new BigInteger("1").shiftLeft(this.hashBits).subtract(
                 new BigInteger("1"));
-        BigInteger x = this.strSimHash.xor(other.strSimHash).and(m);
+        BigInteger x = this.simHash.xor(other.simHash).and(m);
         int tot = 0;
         while (x.signum() != 0) {
             tot += 1;
@@ -150,10 +132,15 @@ public class SimHash {
         }
         return tot;
     }
-    
+
     public double getSemblance(SimHash s2) {
-        double i = (double) this.hammingDistance(s2);
-        return 1 - i / this.hashbits;
+        double i = this.hammingDistance(s2);
+        return 1 - i / this.hashBits;
+    }
+
+    public static double getSemblance(BigInteger simHash1, BigInteger simHash2) {
+
+        return 1;
     }
 
 }

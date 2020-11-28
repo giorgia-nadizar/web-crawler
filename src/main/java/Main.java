@@ -1,31 +1,42 @@
+import io.lettuce.core.RedisConnectionException;
+
 import java.util.Date;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
 
 public class Main {
 
     public static void main(String[] args) throws Exception {
-        Storage storage = new Storage();
+        // first we make sure the redis server is running
+        Storage storage = null;
+        try {
+            storage = new Storage();
+        } catch (RedisConnectionException e) {
+            System.out.println("Redis server refused connection, probably it's not running");
+            System.out.println("To start the server type \"sudo service redis-server restart\" in the shell");
+            System.out.println("After starting the redis server, the crawler will need to be manually restarted");
+            System.exit(0);
+        }
         VisitedPages visitedPages = new VisitedPages();
         Frontier frontier = new Frontier(10, "https://www.amazon.it/", "https://bartoli.inginf.units.it/", "http://univ.trieste.it/", "https://it.wikipedia.org/wiki/Information_retrieval");
         Thread[] spiders = new Thread[Config.NUMBER_OF_SPIDERS];
         Config.STOP_TIME_MILLIS = System.currentTimeMillis() + Config.MAX_RUNTIME_MILLIS;
-        System.out.println(new Date());
+        long initialTime = System.currentTimeMillis();
         for (int i = 0; i < Config.NUMBER_OF_SPIDERS; i++) {
             spiders[i] = new Spider(frontier, visitedPages, storage);
             spiders[i].start();
         }
         Refresher r = new Refresher(frontier, visitedPages);
         r.start();
-        System.out.println("threads all launched");
+        System.out.println("Threads all launched");
         for (Thread spider : spiders) {
             spider.join();
         }
         r.join();
-        System.out.println(new Date());
-        System.out.println("All threads have finished, I will now close the file");
+        long finalTime = System.currentTimeMillis();
+        System.out.println("Total millis spent: " + (finalTime - initialTime));
+        System.out.println("Millis that were meant to be spent: " + Config.MAX_RUNTIME_MILLIS);
+        System.out.println("Threads all finished");
         storage.close();
-        System.out.println("Writer closed, all finished!");
+        System.out.println("Storage closed, all finished!");
+        System.out.println("Remember to issue dbsize annotate it, and then flushall");
     }
 }
