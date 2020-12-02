@@ -1,7 +1,5 @@
 import io.lettuce.core.RedisConnectionException;
 
-import java.util.Date;
-
 public class Main {
 
     public static void main(String[] args) throws Exception {
@@ -17,6 +15,7 @@ public class Main {
         }
         VisitedPages visitedPages = new VisitedPages();
         Frontier frontier = new Frontier(10, "https://www.amazon.it/", "https://bartoli.inginf.units.it/", "http://univ.trieste.it/", "https://it.wikipedia.org/wiki/Information_retrieval");
+        //Frontier frontier = new Frontier(10, "http://127.0.0.1:5500/spidertrap.html");
         Thread[] spiders = new Thread[Config.NUMBER_OF_SPIDERS];
         Config.STOP_TIME_MILLIS = System.currentTimeMillis() + Config.MAX_RUNTIME_MILLIS;
         long initialTime = System.currentTimeMillis();
@@ -27,10 +26,35 @@ public class Main {
         Refresher r = new Refresher(frontier, visitedPages);
         r.start();
         System.out.println("Threads all launched");
+        // very rough termination
+        /*
+        try {
+            Thread.sleep(Config.MAX_RUNTIME_MILLIS);
+            long finalTime = System.currentTimeMillis();
+            System.out.println("Total millis spent: " + (finalTime - initialTime));
+            System.out.println("Millis that were meant to be spent: " + Config.MAX_RUNTIME_MILLIS);
+            System.exit(0);
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+        }*/
+
+        // rough termination
+        try {
+            Thread.sleep(Config.MAX_RUNTIME_MILLIS);
+            for (Thread spider : spiders) {
+                spider.interrupt();
+            }
+            r.interrupt();
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+        }
+
+        // soft termination -> inevitable time drift if rough not activated
         for (Thread spider : spiders) {
             spider.join();
         }
         r.join();
+
         long finalTime = System.currentTimeMillis();
         System.out.println("Total millis spent: " + (finalTime - initialTime));
         System.out.println("Millis that were meant to be spent: " + Config.MAX_RUNTIME_MILLIS);
