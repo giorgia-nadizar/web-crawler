@@ -1,7 +1,7 @@
 public class Config {
 
     //general parameters
-    public static int NUMBER_OF_SPIDERS = 1000;
+    public static int NUMBER_OF_SPIDERS = 1;
     public static int MAX_RUN_TIME_HOURS = 1;
     //static long MAX_RUNTIME_MILLIS = 1000 * 60 * 60 * MAX_RUN_TIME_HOURS;
     static long MAX_RUNTIME_MILLIS = 1000 * 60 * 2;
@@ -25,6 +25,5 @@ public class Config {
     // parameters for the frontier on how to behave in case of empty front queues
     static int WAIT_BEFORE_RETRY_MILLIS = 20000;
     static int MAX_WAIT_ATTEMPTS = 2;
-
-
+    
 }

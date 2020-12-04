@@ -65,7 +65,6 @@ public class Frontier {
                 // here I should give very high priority
                 prioritiser.addToQueueHighPriority(uri, frontQueues);
             }
-
         }
     }
 
@@ -186,6 +185,12 @@ public class Frontier {
         // get a reference to the queue and add the new uri to it
         ConcurrentLinkedQueue<URI> backQueue = backQueues.get(host);
         backQueue.add(uri);
+        synchronized (heap) {
+            if (!heap.contains(host)) {
+                addToHeap(host);
+            }
+        }
+        return;
     }
 
     // could suffer from cold start problem as at the beginning

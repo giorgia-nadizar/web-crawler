@@ -14,8 +14,8 @@ public class Main {
             System.exit(0);
         }
         VisitedPages visitedPages = new VisitedPages();
-        Frontier frontier = new Frontier(10, "https://www.amazon.it/", "https://bartoli.inginf.units.it/", "http://univ.trieste.it/", "https://it.wikipedia.org/wiki/Information_retrieval");
-        //Frontier frontier = new Frontier(10, "http://127.0.0.1:5500/spidertrap.html");
+        //Frontier frontier = new Frontier(10, "https://www.amazon.it/", "https://bartoli.inginf.units.it/", "http://univ.trieste.it/", "https://it.wikipedia.org/wiki/Information_retrieval");
+        Frontier frontier = new Frontier(10, "http://spidertrap.altervista.org/");
         Thread[] spiders = new Thread[Config.NUMBER_OF_SPIDERS];
         Config.STOP_TIME_MILLIS = System.currentTimeMillis() + Config.MAX_RUNTIME_MILLIS;
         long initialTime = System.currentTimeMillis();
@@ -27,7 +27,6 @@ public class Main {
         r.start();
         System.out.println("Threads all launched");
         // very rough termination
-        /*
         try {
             Thread.sleep(Config.MAX_RUNTIME_MILLIS);
             long finalTime = System.currentTimeMillis();
@@ -36,7 +35,7 @@ public class Main {
             System.exit(0);
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
-        }*/
+        }
 
         // rough termination
         try {

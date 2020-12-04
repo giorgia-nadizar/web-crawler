@@ -93,9 +93,11 @@ public class SimHash {
         } else {
             // When the length of the source is too short, the hash algorithm will be invalidated,
             // so it is necessary to compensate for too short words.
-            while (source.length() < 3) {
-                source = source + source.charAt(0);
+            StringBuilder sourceBuilder = new StringBuilder(source);
+            while (sourceBuilder.length() < 3) {
+                sourceBuilder.append(sourceBuilder.charAt(0));
             }
+            source = sourceBuilder.toString();
             char[] sourceArray = source.toCharArray();
             // converts first char to long and appends 7 zeros
             BigInteger x = BigInteger.valueOf(((long) sourceArray[0]) << 7);
