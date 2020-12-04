@@ -186,11 +186,10 @@ public class Frontier {
         ConcurrentLinkedQueue<URI> backQueue = backQueues.get(host);
         backQueue.add(uri);
         synchronized (heap) {
-            if (!heap.contains(host)) {
+            if (!heap.contains((new HeapEntry(host)))) {
                 addToHeap(host);
             }
         }
-        return;
     }
 
     // could suffer from cold start problem as at the beginning
@@ -209,13 +208,16 @@ public class Frontier {
                 if (frontQueue != null && (uri = frontQueue.poll()) != null) {
                     break;
                 } else {
+                    System.out.println("The frontier seems to be empty, I'll try " +
+                            (Config.MAX_WAIT_ATTEMPTS - waitAttempts) + " more time(s)");
                     // if we reach the max allowed attempts we throw an exception and we stop
-                    if (waitAttempts == Config.MAX_WAIT_ATTEMPTS) {
+                    if (waitAttempts >= Config.MAX_WAIT_ATTEMPTS) {
                         throw new EmptyFrontQueuesException("All front queues are empty, impossible to draw url");
                     } else {
                         //we wait and we redo this procedure
                         try {
                             Thread.sleep(Config.WAIT_BEFORE_RETRY_MILLIS);
+                            waitAttempts += 1;
                         } catch (InterruptedException e) {
                             Thread.currentThread().interrupt();
                         }

@@ -23,7 +23,7 @@ public class Config {
     static long REFRESHER_WAIT_BEFORE_CHECKING_PAGE_TO_REFRESH_MILLIS = 1000 * 20;    //20 seconds
 
     // parameters for the frontier on how to behave in case of empty front queues
-    static int WAIT_BEFORE_RETRY_MILLIS = 20000;
+    static int WAIT_BEFORE_RETRY_MILLIS = 20 * 1000;    //20 seconds
     static int MAX_WAIT_ATTEMPTS = 2;
-    
+
 }

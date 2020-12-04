@@ -13,11 +13,11 @@ public class Refresher extends Thread {
     @Override
     public void run() {
         System.out.println("Hi! I am thread " + currentThread().getId() + ". I will be the refresher!");
-        while (System.currentTimeMillis() < Config.STOP_TIME_MILLIS) {
+        while (!isInterrupted() && System.currentTimeMillis() < Config.STOP_TIME_MILLIS) {
             URI pageToRefresh = visitedPages.getNextPageToRefresh();
             if (pageToRefresh != null) {
                 frontier.insertSeenURLToRefresh(pageToRefresh);
-            } else if ((System.currentTimeMillis() + Config.REFRESHER_WAIT_BEFORE_CHECKING_PAGE_TO_REFRESH_MILLIS)
+            } else if (!isInterrupted() && (System.currentTimeMillis() + Config.REFRESHER_WAIT_BEFORE_CHECKING_PAGE_TO_REFRESH_MILLIS)
                     < Config.STOP_TIME_MILLIS) {
                 try {
                     Thread.sleep(Config.REFRESHER_WAIT_BEFORE_CHECKING_PAGE_TO_REFRESH_MILLIS);

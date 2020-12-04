@@ -26,6 +26,7 @@ public class Main {
         Refresher r = new Refresher(frontier, visitedPages);
         r.start();
         System.out.println("Threads all launched");
+        // +++++++++ this part is only for performance testing ++++++++++++++++++++++++++++++++++++++++
         // very rough termination
         try {
             Thread.sleep(Config.MAX_RUNTIME_MILLIS);
@@ -47,11 +48,14 @@ public class Main {
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
         }
+        // +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
         // soft termination -> inevitable time drift if rough not activated
         for (Thread spider : spiders) {
             spider.join();
         }
+        // if all spiders have finished the refresher must be interrupted
+        r.interrupt();
         r.join();
 
         long finalTime = System.currentTimeMillis();
