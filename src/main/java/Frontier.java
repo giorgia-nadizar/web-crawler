@@ -153,6 +153,8 @@ public class Frontier {
                 return uri;
             }
         }
+        //if the queue was empty we need to put back the host into the heap (with some delay to avoid immediate redraw)
+        addToHeapWithDelay(host);
         try {
             moveFromFrontQueueToBackQueue();
         } catch (EmptyFrontQueuesException e) {
@@ -185,11 +187,6 @@ public class Frontier {
         // get a reference to the queue and add the new uri to it
         ConcurrentLinkedQueue<URI> backQueue = backQueues.get(host);
         backQueue.add(uri);
-        synchronized (heap) {
-            if (!heap.contains((new HeapEntry(host)))) {
-                addToHeap(host);
-            }
-        }
     }
 
     // could suffer from cold start problem as at the beginning
@@ -235,6 +232,13 @@ public class Frontier {
     // is performed (if it's already in the heap nothing is done)
     private synchronized void addToHeap(String host) {
         HeapEntry entry = new HeapEntry(host);
+        if (!heap.contains(entry)) {
+            heap.add(entry);
+        }
+    }
+
+    private synchronized void addToHeapWithDelay(String host) {
+        HeapEntry entry = new HeapEntry(host, Config.MIN_WAIT_TIME_BEFORE_RECONTACTING_HOST_MILLIS);
         if (!heap.contains(entry)) {
             heap.add(entry);
         }

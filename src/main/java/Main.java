@@ -14,8 +14,8 @@ public class Main {
             System.exit(0);
         }
         VisitedPages visitedPages = new VisitedPages();
-        //Frontier frontier = new Frontier(10, "https://www.amazon.it/", "https://bartoli.inginf.units.it/", "http://univ.trieste.it/", "https://it.wikipedia.org/wiki/Information_retrieval");
-        Frontier frontier = new Frontier(10, "http://spidertrap.altervista.org/");
+        Frontier frontier = new Frontier(10, "https://www.amazon.it/", "https://bartoli.inginf.units.it/", "http://univ.trieste.it/", "https://it.wikipedia.org/wiki/Information_retrieval");
+        //Frontier frontier = new Frontier(10, "http://spidertrap.altervista.org/");
         Thread[] spiders = new Thread[Config.NUMBER_OF_SPIDERS];
         Config.STOP_TIME_MILLIS = System.currentTimeMillis() + Config.MAX_RUNTIME_MILLIS;
         long initialTime = System.currentTimeMillis();
