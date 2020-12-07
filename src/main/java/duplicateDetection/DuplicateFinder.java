@@ -1,43 +1,52 @@
 package duplicateDetection;
 
 import crawling.Config;
-import crawling.SimHash;
 import crawling.Storage;
+import org.christopherfrantz.dbscan.DBSCANClusterer;
+import org.christopherfrantz.dbscan.DBSCANClusteringException;
 
 import java.math.BigInteger;
-import java.util.HashMap;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 public class DuplicateFinder {
 
-    private final Map<UrlCouple, Double> similarityMatrix;
+    Storage storage;
+    List<UrlWithSimHash> simHashes;
 
     public DuplicateFinder(Storage storage) {
+        this.storage = storage;
+        loadUrlsAndSimHashes();
+    }
+
+    private void loadUrlsAndSimHashes() {
         List<String> storedUrls = storage.getAllKeys();
-        similarityMatrix = new HashMap<>();
-        for (String url1 : storedUrls) {
-            BigInteger simHash1 = new BigInteger(storage.getValueByKey(url1, Config.SIMHASH_FIELD_NAME));
-            for (String url2 : storedUrls) {
-                if (url1.equals(url2)) {
-                    continue;
-                }
-                BigInteger simHash2 = new BigInteger(storage.getValueByKey(url2, Config.SIMHASH_FIELD_NAME));
-                similarityMatrix.put(UrlCouple.create(url1, url2), SimHash.getSemblance(simHash1, simHash2));
-            }
+        simHashes = new ArrayList<>();
+        for (String url : storedUrls) {
+            simHashes.add(
+                    new UrlWithSimHash(url,
+                            new BigInteger(storage.getValueByKey(url, Config.SIMHASH_FIELD_NAME))));
         }
     }
 
-    public void filter() {
-        filter(0.8);
+    public ArrayList<ArrayList<UrlWithSimHash>> cluster() {
+        try {
+            DBSCANClusterer<UrlWithSimHash> clusterer =
+                    new DBSCANClusterer<>(simHashes, Config.MIN_PTS, Config.MAX_DISTANCE, new UrlSimHashDistanceMetrics());
+            ArrayList<ArrayList<UrlWithSimHash>> clusters = clusterer.performClustering();
+            storage.addClusterIds(clusters);
+            return clusters;
+        } catch (DBSCANClusteringException e) {
+            e.printStackTrace();
+            return null;
+        }
     }
 
-    public void filter(double threshold) {
-        for (Map.Entry<UrlCouple, Double> entry : similarityMatrix.entrySet()) {
-            double semblance = entry.getValue();
-            if (semblance >= threshold) {
-                System.out.println(entry.getKey() + " -> " + entry.getValue());
-            }
+    public void clusterAndPrint() {
+        ArrayList<ArrayList<UrlWithSimHash>> clusters = cluster();
+        System.out.println("Clusters found: " + clusters.size());
+        for (ArrayList<UrlWithSimHash> cluster : clusters) {
+            System.out.println(cluster);
         }
     }
 

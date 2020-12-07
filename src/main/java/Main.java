@@ -66,7 +66,7 @@ public class Main {
         System.out.println("Millis that were meant to be spent: " + Config.MAX_RUNTIME_MILLIS);
         System.out.println("Threads all finished");
         DuplicateFinder duplicateFinder = new DuplicateFinder(storage);
-        duplicateFinder.filter(0.6);
+        duplicateFinder.clusterAndPrint();
         storage.close();
         System.out.println("Storage closed, all finished!");
     }

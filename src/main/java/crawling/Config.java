@@ -31,5 +31,10 @@ public class Config {
     public static final String SIMHASH_FIELD_NAME = "simhash";
     public static final String DATE_FIELD_NAME = "date";
     public static final String CONTENT_FIELD_NAME = "content";
+    public static final String CLUSTER_FIELD_NAME = "clusterID";
+
+    // parameters for clustering
+    public static final int MIN_PTS = 2;
+    public static final double MAX_DISTANCE = 0.7;
 
 }

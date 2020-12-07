@@ -1,13 +1,11 @@
 package crawling;
 
+import duplicateDetection.UrlWithSimHash;
 import io.lettuce.core.RedisClient;
 import io.lettuce.core.api.StatefulRedisConnection;
 
 import java.net.URI;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class Storage {
 
@@ -30,6 +28,18 @@ public class Storage {
     public void close() {
         this.connection.close();
         this.client.shutdown();
+    }
+
+    public void addClusterIds(ArrayList<ArrayList<UrlWithSimHash>> clusters) {
+        int i = 0;
+        for (ArrayList<UrlWithSimHash> cluster : clusters) {
+            String clusterID = "" + i;
+            for (UrlWithSimHash url : cluster) {
+                connection.async().sadd("cluster" + clusterID, url.getUrl());
+                connection.async().hset(url.getUrl(), Config.CLUSTER_FIELD_NAME, clusterID);
+            }
+            i += 1;
+        }
     }
 
     public void insertCrawlResult(URI uri, String content) {
