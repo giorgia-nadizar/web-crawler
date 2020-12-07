@@ -1,3 +1,5 @@
+package crawling;
+
 import java.net.URI;
 import java.util.Date;
 import java.util.Objects;

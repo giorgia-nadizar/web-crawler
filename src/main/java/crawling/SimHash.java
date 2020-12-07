@@ -1,4 +1,4 @@
-// from https://www.programmersought.com/article/4084449403/
+package crawling;// from https://www.programmersought.com/article/4084449403/
 
 import com.hankcs.hanlp.seg.common.Term;
 import com.hankcs.hanlp.tokenizer.StandardTokenizer;
@@ -15,8 +15,8 @@ public class SimHash {
     private final BigInteger simHash; // character produced hash value
     private final static int hashBits = 64; // the number of hashes after the word segmentation
 
-    public SimHash(String tokens) {
-        this.text = tokens;
+    public SimHash(String text) {
+        this.text = text;
         this.simHash = this.simHash();
     }
 
@@ -140,5 +140,13 @@ public class SimHash {
         return 1 - i / hashBits;
     }
 
+    @Override
+    public String toString() {
+        return simHash.toString();
+    }
+
+    public static String simHash(String text) {
+        return (new SimHash(text)).toString();
+    }
 }
 

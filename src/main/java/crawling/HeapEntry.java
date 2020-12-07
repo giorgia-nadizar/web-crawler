@@ -1,3 +1,5 @@
+package crawling;
+
 import java.util.Date;
 import java.util.Objects;
 
@@ -44,7 +46,7 @@ public class HeapEntry implements Comparable<HeapEntry> {
 
     @Override
     public String toString() {
-        return "HeapEntry{" +
+        return "crawling.HeapEntry{" +
                 "host='" + host + '\'' +
                 ", nextVisitTime=" + nextVisitTime +
                 '}';

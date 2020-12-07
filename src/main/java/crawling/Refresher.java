@@ -1,3 +1,5 @@
+package crawling;
+
 import java.net.URI;
 
 public class Refresher extends Thread {

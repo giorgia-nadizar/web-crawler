@@ -1,3 +1,5 @@
+package crawling;
+
 import com.panforge.robotstxt.RobotsTxt;
 import org.jsoup.Connection;
 import org.jsoup.helper.HttpConnection;

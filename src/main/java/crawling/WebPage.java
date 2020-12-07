@@ -1,3 +1,5 @@
+package crawling;
+
 import org.jsoup.nodes.Document;
 
 public class WebPage {
