@@ -1,5 +1,6 @@
 package duplicateDetection;
 
+import crawling.Config;
 import crawling.SimHash;
 import crawling.Storage;
 
@@ -10,21 +11,18 @@ import java.util.Map;
 
 public class DuplicateFinder {
 
-    private Storage storage;
-    private static final String SIMHASH_FIELD_NAME = "simhash";
     private final Map<UrlCouple, Double> similarityMatrix;
 
     public DuplicateFinder(Storage storage) {
-        this.storage = storage;
         List<String> storedUrls = storage.getAllKeys();
         similarityMatrix = new HashMap<>();
         for (String url1 : storedUrls) {
-            BigInteger simHash1 = new BigInteger(storage.getValueByKey(url1, SIMHASH_FIELD_NAME));
+            BigInteger simHash1 = new BigInteger(storage.getValueByKey(url1, Config.SIMHASH_FIELD_NAME));
             for (String url2 : storedUrls) {
                 if (url1.equals(url2)) {
                     continue;
                 }
-                BigInteger simHash2 = new BigInteger(storage.getValueByKey(url2, SIMHASH_FIELD_NAME));
+                BigInteger simHash2 = new BigInteger(storage.getValueByKey(url2, Config.SIMHASH_FIELD_NAME));
                 similarityMatrix.put(UrlCouple.create(url1, url2), SimHash.getSemblance(simHash1, simHash2));
             }
         }

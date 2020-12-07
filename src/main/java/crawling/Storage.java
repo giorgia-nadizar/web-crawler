@@ -8,8 +8,6 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 public class Storage {
 
@@ -38,9 +36,9 @@ public class Storage {
         // https://lettuce.io/lettuce-4/release/api/com/lambdaworks/redis/api/sync/RedisHashCommands.html
         // try to use h set to set url as key and date, content and hash as values
         Map<String, String> map = new HashMap<>();
-        map.put("content", content);
-        map.put("date", (new Date()).toString());
-        map.put("simhash", SimHash.simHash(content));
+        map.put(Config.CONTENT_FIELD_NAME, content);
+        map.put(Config.DATE_FIELD_NAME, (new Date()).toString());
+        map.put(Config.SIMHASH_FIELD_NAME, SimHash.simHash(content));
         connection.async().hmset(escapeSpecialCharacters(uri.toString()), map);
         System.out.println(uri);
     }
@@ -52,12 +50,6 @@ public class Storage {
             escapedData = "\"" + data + "\"";
         }
         return escapedData;
-    }
-
-    private static String convertToCSV(String... data) {
-        return Stream.of(data)
-                .map(Storage::escapeSpecialCharacters)
-                .collect(Collectors.joining(","));
     }
 
 }

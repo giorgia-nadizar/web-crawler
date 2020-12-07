@@ -27,4 +27,9 @@ public class Config {
     public static int WAIT_BEFORE_RETRY_MILLIS = 20 * 1000;    //20 seconds
     public static int MAX_WAIT_ATTEMPTS = 2;
 
+    // parameters for storage
+    public static final String SIMHASH_FIELD_NAME = "simhash";
+    public static final String DATE_FIELD_NAME = "date";
+    public static final String CONTENT_FIELD_NAME = "content";
+
 }
