@@ -2,16 +2,10 @@ import io.lettuce.core.RedisClient;
 import io.lettuce.core.api.StatefulRedisConnection;
 
 import java.net.URI;
-import java.util.Date;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 public class Storage {
-
-    // FUTURE DEVELOPMENT IDEAS
-    // each thread could use their own file to write onto (no need for sync)
-    // at the end of the process each file will be closed
-    // and they will be merged into one common file
 
     private final RedisClient client;
     private final StatefulRedisConnection<String, String> connection;
@@ -27,6 +21,8 @@ public class Storage {
     }
 
     public void insertCrawlResult(URI uri, String content) {
+        // https://lettuce.io/lettuce-4/release/api/com/lambdaworks/redis/api/sync/RedisHashCommands.html
+        // try to use hset to set url as key and date, content and hash as values
         System.out.println(uri);
         connection.async().set(uri.toString(), convertToCSV(content));
         //uncomment next line to add timestamping

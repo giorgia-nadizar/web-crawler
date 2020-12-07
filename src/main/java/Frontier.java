@@ -8,11 +8,11 @@ import java.util.concurrent.PriorityBlockingQueue;
 public class Frontier {
 
     private final Prioritiser prioritiser;
-    private final ArrayList<ConcurrentLinkedQueue<URI>> frontQueues;
+    private final List<ConcurrentLinkedQueue<URI>> frontQueues;
     private final ConcurrentHashMap<String, ConcurrentLinkedQueue<URI>> backQueues;
     private final PriorityBlockingQueue<HeapEntry> heap;
-    private final Set<URI> pendingUrls;
     private final ConcurrentHashMap<String, Integer> urlsPerHost;
+    private final Set<URI> pendingUrls;
     // NOTE: pendingUrls is necessary for concurrence
     // example of what could go wrong without it
     // thread A wants to insert page 1 somewhere
@@ -68,7 +68,7 @@ public class Frontier {
         }
     }
 
-    public void insertURLS(Set<String> urls) {
+    public void insertURLs(Set<String> urls) {
         for (String url : urls) {
             insertURL(url);
         }
@@ -96,22 +96,21 @@ public class Frontier {
             return;
         }
         //check if the protocol is http or https
-        if (uri.getScheme().equals("http") || uri.getScheme().equals("https")) {
-            synchronized (this) {
-                String host = uri.getHost();
-                if (host == null) {
-                    return;
-                }
-                Integer urlsForThisHost = urlsPerHost.get(host);
-                if (urlsForThisHost == null) {
-                    urlsForThisHost = 0;
-                }
-                if (urlsForThisHost < Config.MAX_URLS_PER_HOST) {
-                    urlsPerHost.put(uri.getHost(), urlsForThisHost + 1);
-                } else {
-                    return;
-                }
+        if (!uri.getScheme().equals("http") && !uri.getScheme().equals("https")) {
+            return;
+        }
+        String host = uri.getHost();
+        if (host == null) {
+            return;
+        }
+        synchronized (urlsPerHost) {
+            Integer urlsForThisHost = urlsPerHost.get(host);
+            if (urlsForThisHost == null) {
+                urlsForThisHost = 0;
+            }
+            if (urlsForThisHost < Config.MAX_URLS_PER_HOST) {
                 if (pendingUrls.add(uri)) {
+                    urlsPerHost.put(uri.getHost(), urlsForThisHost + 1);
                     prioritiser.addToQueue(uri, frontQueues);
                 }
             }
@@ -162,12 +161,23 @@ public class Frontier {
             return null;
         }
         return getNextURL();
-
     }
+
+    public void addVisitedHostWithDelayForNextVisit(String host, long delayMillis) {
+        if (delayMillis < Config.MIN_WAIT_TIME_BEFORE_RECONTACTING_HOST_MILLIS) {
+            delayMillis = Config.MIN_WAIT_TIME_BEFORE_RECONTACTING_HOST_MILLIS;
+        }
+        updateHeap(host, delayMillis);
+    }
+
+    public void removeVisitedURI(URI uri) {
+        pendingUrls.remove(uri);
+    }
+
 
     private void moveFromFrontQueueToBackQueue() throws EmptyFrontQueuesException {
         //draw URL from one of the non empty frontQueues
-        URI uri = drawURIFromFrontQueue();
+        URI uri = drawURLFromFrontQueue();
         String host = uri.getHost();
         if (host == null) {
             return;
@@ -191,7 +201,7 @@ public class Frontier {
 
     // could suffer from cold start problem as at the beginning
     // many front queues will be empty causing long search
-    private URI drawURIFromFrontQueue() throws EmptyFrontQueuesException {
+    private URI drawURLFromFrontQueue() throws EmptyFrontQueuesException {
         URI uri = prioritiser.selectQueueToDrawFrom(frontQueues).poll();
         // if that queue was empty draw another one
         if (uri == null) {
@@ -238,27 +248,16 @@ public class Frontier {
     }
 
     private synchronized void addToHeapWithDelay(String host) {
-        HeapEntry entry = new HeapEntry(host, Config.MIN_WAIT_TIME_BEFORE_RECONTACTING_HOST_MILLIS);
+        HeapEntry entry = new HeapEntry(host, Config.WAIT_BEFORE_RETRY_MILLIS);
         if (!heap.contains(entry)) {
             heap.add(entry);
         }
     }
 
-    // given an host sets the next time we will be able to visit it
-    // this method is to be used whenever the host is contacted and
-    // we set a delay for visiting it next time, is the host is already
-    // in the heap (which means it has a shorter delay set), we delete it
-    // and insert the new version with longer waiting time
-    public synchronized void updateHeap(String host, long delayMillis) {
-        if (delayMillis < Config.MIN_WAIT_TIME_BEFORE_RECONTACTING_HOST_MILLIS) {
-            delayMillis = Config.MIN_WAIT_TIME_BEFORE_RECONTACTING_HOST_MILLIS;
-        }
+    private synchronized void updateHeap(String host, long delayMillis) {
         HeapEntry entry = new HeapEntry(host, delayMillis);
         heap.remove(entry);
         heap.add(entry);
     }
 
-    public void removeFromPending(URI uri) {
-        pendingUrls.remove(uri);
-    }
 }

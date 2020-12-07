@@ -1,5 +1,5 @@
 import java.net.URI;
-import java.util.ArrayList;
+import java.util.List;
 import java.util.Random;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.stream.IntStream;
@@ -35,13 +35,13 @@ public class Prioritiser {
 
     // selects the new queue with probability proportional to F, if the queues aren't in number of F
     // then this prioritiser can't do anything
-    public ConcurrentLinkedQueue<URI> selectQueueToDrawFrom(ArrayList<ConcurrentLinkedQueue<URI>> queues) {
+    public ConcurrentLinkedQueue<URI> selectQueueToDrawFrom(List<ConcurrentLinkedQueue<URI>> queues) {
         return queues.get(getQueueIndex(queues.size()));
     }
 
     // used after selectQueueToDrawFrom if we received at least one empty result
     // (we suspect there are plenty of empty entries)
-    public synchronized ConcurrentLinkedQueue<URI> selectFirstNonEmptyQueueToDrawFrom(ArrayList<ConcurrentLinkedQueue<URI>> queues) {
+    public synchronized ConcurrentLinkedQueue<URI> selectFirstNonEmptyQueueToDrawFrom(List<ConcurrentLinkedQueue<URI>> queues) {
         for (int j = queues.size() - 1; j >= 0; j--) {
             if (!queues.get(j).isEmpty()) {
                 return queues.get(j);
@@ -50,12 +50,12 @@ public class Prioritiser {
         return null;
     }
 
-    public void addToQueue(URI uri, ArrayList<ConcurrentLinkedQueue<URI>> queues) {
+    public void addToQueue(URI uri, List<ConcurrentLinkedQueue<URI>> queues) {
         Random random = new Random();
         queues.get(random.nextInt(queues.size())).add(uri);
     }
 
-    public void addToQueueHighPriority(URI uri, ArrayList<ConcurrentLinkedQueue<URI>> queues) {
+    public void addToQueueHighPriority(URI uri, List<ConcurrentLinkedQueue<URI>> queues) {
         Random random = new Random();
         queues.get(random.nextInt(queues.size() / 2) + queues.size() - queues.size() / 2).add(uri);
     }

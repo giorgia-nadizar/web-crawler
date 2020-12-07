@@ -1,10 +1,3 @@
-import com.panforge.robotstxt.RobotsTxt;
-import org.jsoup.Connection;
-import org.jsoup.helper.HttpConnection;
-import org.jsoup.nodes.Document;
-
-import java.io.IOException;
-import java.io.InputStream;
 import java.net.*;
 import java.util.Collections;
 import java.util.Set;
@@ -22,21 +15,6 @@ public class Spider extends Thread {
         this.storage = storage;
     }
 
-    // checks if the given URI is allowed by robots.txt
-    private boolean isAllowedByRobots(URI uri) {
-        try (InputStream robotsTxtStream = new URL("https://" + uri.getHost() + "/robots.txt").openStream()) {
-            RobotsTxt robotsTxt = RobotsTxt.read(robotsTxtStream);
-            if (!robotsTxt.query(null, uri.getPath())) {
-                // robots.txt doesn't grant access to this url
-                return false;
-            }
-        } catch (IOException e) {
-            // if we get here there is no existing robots.txt file for that host
-            //e.printStackTrace();
-        }
-        return true;
-    }
-
     @Override
     public void run() {
         System.out.println("Hi! I am thread " + currentThread().getId());
@@ -46,56 +24,23 @@ public class Spider extends Thread {
                 System.out.println("Empty frontier, thread " + currentThread().getId() + " will stop here");
                 break;
             }
-            // if the uri is not allowed, skip it
-            // remember to always update the frontier
-            long timeBeforeCheckingRobotsFile = System.currentTimeMillis();
-            boolean isAllowedByRobots = isAllowedByRobots(uri);
-            long timeAfterCheckingRobotsFile = System.currentTimeMillis();
-            if (!isAllowedByRobots) {
-                frontier.removeFromPending(uri);
-                frontier.updateHeap(uri.getHost(), Config.MIN_WAIT_TIME_BEFORE_RECONTACTING_HOST_MILLIS);
-                continue;
-            }
-            // sleep for 10 * the time needed to read the robots file to ensure fairness
-            try {
-                Thread.sleep(10 * (timeAfterCheckingRobotsFile - timeBeforeCheckingRobotsFile));
-            } catch (InterruptedException e) {
-                Thread.currentThread().interrupt();
-            }
-            HttpConnection connection = new HttpConnection();
-            connection.url(uri.toString()).followRedirects(true).ignoreHttpErrors(true);
-            Connection.Response response;
-            long responseTime = 0;
-            String lastModified = null;
-            String content = null;
-            try {
-                long startTime = System.currentTimeMillis();
-                response = connection.execute();
-                long stopTime = System.currentTimeMillis();
-                responseTime = stopTime - startTime;
-                lastModified = response.header("Last-Modified");
-                if (response.statusCode() >= 300 && response.statusCode() < 400) {
-                    System.out.println("Redirection to " + response.header("Location"));
+            long responseTime = Config.MIN_WAIT_TIME_BEFORE_RECONTACTING_HOST_MILLIS;
+            WebPage webPage = WebPageDownloader.fetch(uri);
+            // it might be null because not allowed by robots.txt or because of errors
+            if (webPage != null) {
+                Set<String> links = Collections.newSetFromMap(new ConcurrentHashMap<>());
+                // forward the content to the parser
+                String content = Parser.parse(webPage.getDocument(), links);
+                responseTime = webPage.getResponseTime();
+                // filter all found urls and add them to the frontier
+                visitedPages.filterAlreadyVisitedUrls(links);
+                frontier.insertURLs(links);
+                if (visitedPages.addAndReturnIfModified(uri, webPage.getLastModified()) && content != null) {
+                    storage.insertCrawlResult(uri, content);
                 }
-                if (response.statusCode() >= 200 && response.statusCode() < 300) {
-                    Document document = response.parse();
-                    Set<String> links = Collections.newSetFromMap(new ConcurrentHashMap<>());
-                    // forward the content to the parser
-                    content = Parser.parse(document, links);
-                    // filter all found urls and add them to the frontier
-                    visitedPages.filterAlreadyVisitedUrls(links);
-                    frontier.insertURLS(links);
-                }
-            } catch (IOException e) {
-                // we can fall here for various reasons, for example the content of the
-                // page is not supported (not text/* or application/xml or application/*+xml)
-                //e.printStackTrace();
             }
-            if (visitedPages.addAndReturnIfModified(uri, lastModified) && content != null) {
-                storage.insertCrawlResult(uri, content);
-            }
-            frontier.removeFromPending(uri);
-            frontier.updateHeap(uri.getHost(), 10 * responseTime);
+            frontier.removeVisitedURI(uri);
+            frontier.addVisitedHostWithDelayForNextVisit(uri.getHost(), 10 * responseTime);
         }
         System.out.println("Bye! Spider thread " + currentThread().getId() + " stops here.");
     }
