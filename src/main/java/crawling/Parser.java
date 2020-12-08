@@ -8,6 +8,7 @@ import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+// uses jSoup library to extract content and links from a webpage
 public class Parser {
 
     // Pattern for recognizing a URL, based off RFC 3986
@@ -15,26 +16,22 @@ public class Parser {
             "https?:\\/\\/(www\\.)?[-a-zA-Z0-9@:%._\\+~#=]{1,256}\\.[a-zA-Z0-9()]{1,6}\\b([-a-zA-Z0-9()@:%_\\+.~#?&=]*)",
             Pattern.CASE_INSENSITIVE | Pattern.MULTILINE | Pattern.DOTALL);
 
+    // parses the jSoup document: returns the content as text and stores all the links found in the given set
     public static String parse(Document document, Set<String> links) {
-        // extract all links
-        Elements htmlLinks = document.select("a[href]");
+        Elements htmlLinks = document.select("a[href]");    // extract all links
         for (Element link : htmlLinks) {
-            // for each link get the absolute url and add it to the given set
-            // we use a set to avoid duplication
-            links.add(link.attr("abs:href"));
+            links.add(link.attr("abs:href"));   // makes the link absolute and adds it to the set
         }
-        // extract the text content of the page
-        Element body = document.body();
-        String content = "";
-        if (body != null) {
-            content += body.text();
+        Element body = document.body();     // extract the text content of the page
+        if (body == null) {
+            return null;
         }
-        // make sure there aren't missed urls in the text
+        String content = body.text();
+        // parse the content for any links written as text
         Matcher matcher = URL_PATTERN.matcher(content);
         while (matcher.find()) {
             links.add(matcher.group());
         }
-        // return the page content
         return content;
     }
 

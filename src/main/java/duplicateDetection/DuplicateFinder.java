@@ -1,6 +1,6 @@
 package duplicateDetection;
 
-import crawling.Config;
+import main.Config;
 import crawling.Storage;
 import org.christopherfrantz.dbscan.DBSCANClusterer;
 import org.christopherfrantz.dbscan.DBSCANClusteringException;

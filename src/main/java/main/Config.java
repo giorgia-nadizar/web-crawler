@@ -1,9 +1,10 @@
-package crawling;
+package main;
 
 public class Config {
 
     //general parameters
     public static int NUMBER_OF_SPIDERS = 1;
+    public static int NUMBER_OF_FRONT_QUEUES = 10;
     public static int MAX_RUN_TIME_MINUTES = 5;
     public static long MAX_RUNTIME_MILLIS = 1000 * 60 * MAX_RUN_TIME_MINUTES;
     public static long STOP_TIME_MILLIS;

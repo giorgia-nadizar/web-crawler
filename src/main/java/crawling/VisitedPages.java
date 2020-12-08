@@ -1,5 +1,7 @@
 package crawling;
 
+import main.Config;
+
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.text.ParseException;

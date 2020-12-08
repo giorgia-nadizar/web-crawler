@@ -11,16 +11,10 @@ import java.util.List;
 import java.util.Map;
 
 public class SimHash {
-    private String text;
-    private final BigInteger simHash; // character produced hash value
+
     private final static int hashBits = 64; // the number of hashes after the word segmentation
 
-    public SimHash(String text) {
-        this.text = text;
-        this.simHash = this.simHash();
-    }
-
-    private String normalize(String content) {
+    private static String normalize(String content) {
         String[] strings = {" ", "\n", "\r", "\t", "\\r", "\\n", "\\t", "&nbsp;"};
         for (String s : strings) {
             content = content.replaceAll(s, "");
@@ -29,15 +23,15 @@ public class SimHash {
     }
 
     // Clear html tags
-    private String cleanHtmlTags(String content) {
+    private static String cleanHtmlTags(String content) {
         // If the input is HTML, the following will filter out all the HTML tags.
         return Jsoup.clean(content, Whitelist.none()).toLowerCase();
     }
 
     // This is a hash calculation of the entire string
-    private BigInteger simHash() {
+    public static BigInteger simHash(String text) {
         text = normalize(cleanHtmlTags(text));
-        List<Term> tokens = StandardTokenizer.segment(this.text);
+        List<Term> tokens = StandardTokenizer.segment(text);
         int[] v = new int[hashBits];
         Map<String, Integer> partOfSpeechWeights = new HashMap<>();
         partOfSpeechWeights.put("n", 2); //The weight given to the noun is 2
@@ -87,7 +81,7 @@ public class SimHash {
         return fingerprint;
     }
 
-    private BigInteger hash(String source) {
+    private static BigInteger hash(String source) {
         if (source == null || source.length() == 0) {
             return new BigInteger("0");
         } else {
@@ -115,10 +109,6 @@ public class SimHash {
         }
     }
 
-    public int hammingDistance(SimHash other) {
-        return hammingDistance(this.simHash, other.simHash);
-    }
-
     public static int hammingDistance(BigInteger simHash1, BigInteger simHash2) {
         BigInteger m = new BigInteger("1").shiftLeft(hashBits).subtract(
                 new BigInteger("1"));
@@ -131,22 +121,10 @@ public class SimHash {
         return tot;
     }
 
-    public double getSemblance(SimHash s2) {
-        return getSemblance(this.simHash, s2.simHash);
-    }
-
     public static double getSemblance(BigInteger simHash1, BigInteger simHash2) {
         double i = hammingDistance(simHash1, simHash2);
         return 1 - i / hashBits;
     }
 
-    @Override
-    public String toString() {
-        return simHash.toString();
-    }
-
-    public static String simHash(String text) {
-        return (new SimHash(text)).toString();
-    }
 }
 

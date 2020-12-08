@@ -3,6 +3,7 @@ package crawling;
 import duplicateDetection.UrlWithSimHash;
 import io.lettuce.core.RedisClient;
 import io.lettuce.core.api.StatefulRedisConnection;
+import main.Config;
 
 import java.net.URI;
 import java.util.*;
@@ -48,7 +49,7 @@ public class Storage {
         Map<String, String> map = new HashMap<>();
         map.put(Config.CONTENT_FIELD_NAME, content);
         map.put(Config.DATE_FIELD_NAME, (new Date()).toString());
-        map.put(Config.SIMHASH_FIELD_NAME, SimHash.simHash(content));
+        map.put(Config.SIMHASH_FIELD_NAME, SimHash.simHash(content).toString());
         connection.async().hmset(escapeSpecialCharacters(uri.toString()), map);
         System.out.println(uri);
     }

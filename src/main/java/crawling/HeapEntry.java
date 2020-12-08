@@ -3,6 +3,8 @@ package crawling;
 import java.util.Date;
 import java.util.Objects;
 
+// used as an entry for the priority heap in the Mercator frontier
+// therefore it must implement the comparable interface
 public class HeapEntry implements Comparable<HeapEntry> {
 
     private final String host;
@@ -10,7 +12,7 @@ public class HeapEntry implements Comparable<HeapEntry> {
 
     public HeapEntry(String host) {
         this.host = host;
-        nextVisitTime = new Date();
+        nextVisitTime = new Date(); // zero delay by default
     }
 
     public HeapEntry(String host, long delayMillis) {
@@ -31,7 +33,7 @@ public class HeapEntry implements Comparable<HeapEntry> {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         HeapEntry heapEntry = (HeapEntry) o;
-        return Objects.equals(host, heapEntry.host);
+        return host.equals(heapEntry.host);
     }
 
     @Override
@@ -40,13 +42,14 @@ public class HeapEntry implements Comparable<HeapEntry> {
     }
 
     @Override
+    // method needed to implement the comparable interface: entries are sorted by next visit time
     public int compareTo(HeapEntry other) {
         return this.getNextVisitTime().compareTo(other.getNextVisitTime());
     }
 
     @Override
     public String toString() {
-        return "crawling.HeapEntry{" +
+        return "HeapEntry{" +
                 "host='" + host + '\'' +
                 ", nextVisitTime=" + nextVisitTime +
                 '}';

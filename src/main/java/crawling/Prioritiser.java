@@ -6,27 +6,33 @@ import java.util.Random;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.stream.IntStream;
 
-public class Prioritiser {
+// defines a model for a Prioritiser for Mercator Frontier
+// abstract methods must be implemented: they will customize queues selection criteria
+public abstract class Prioritiser {
 
-    private final int F;
-    private final int sumOfF;
+    private final int numberOfFrontQueues;
+    private final int sumOfFrontQueueIndexes; // used to calculate the probability to draw values
 
-    public Prioritiser(int f) {
-        F = f;
-        sumOfF = IntStream.range(1, F + 1).sum();
+    public Prioritiser(int numberOfFrontQueues) {
+        this.numberOfFrontQueues = numberOfFrontQueues;
+        sumOfFrontQueueIndexes = IntStream.range(1, numberOfFrontQueues + 1).sum();
     }
 
-    public int getF() {
-        return F;
+    public int getNumberOfFrontQueues() {
+        return numberOfFrontQueues;
     }
 
-    public int getQueueIndex(int l) {
+    // returns an index chosen with probability proportional to the index
+    // if numberOfQueues is not the same as numberOfFrontQueues returns a random index
+    private int getQueueIndex(int numberOfQueues) {
         Random random = new Random();
-        if (l != F) {
-            return random.nextInt(l);
+        if (numberOfQueues != numberOfFrontQueues) {
+            return random.nextInt(numberOfQueues);
         } else {
-            int rd = random.nextInt(sumOfF) + 1;
-            int drawnValue = F;
+            // generate a random value from 0 to sumOfFrontIndexes
+            // and return the quantile it falls into
+            int rd = random.nextInt(sumOfFrontQueueIndexes) + 1;
+            int drawnValue = numberOfFrontQueues;
             while (rd > 0) {
                 rd -= drawnValue;
                 drawnValue -= 1;
@@ -35,14 +41,12 @@ public class Prioritiser {
         }
     }
 
-    // selects the new queue with probability proportional to F, if the queues aren't in number of F
-    // then this prioritiser can't do anything
+    // selects a queue with getQueueIndex method
     public ConcurrentLinkedQueue<URI> selectQueueToDrawFrom(List<ConcurrentLinkedQueue<URI>> queues) {
         return queues.get(getQueueIndex(queues.size()));
     }
 
-    // used after selectQueueToDrawFrom if we received at least one empty result
-    // (we suspect there are plenty of empty entries)
+    // selects the first non empty queue starting from those with higher priority
     public synchronized ConcurrentLinkedQueue<URI> selectFirstNonEmptyQueueToDrawFrom(List<ConcurrentLinkedQueue<URI>> queues) {
         for (int j = queues.size() - 1; j >= 0; j--) {
             if (!queues.get(j).isEmpty()) {
@@ -52,14 +56,10 @@ public class Prioritiser {
         return null;
     }
 
-    public void addToQueue(URI uri, List<ConcurrentLinkedQueue<URI>> queues) {
-        Random random = new Random();
-        queues.get(random.nextInt(queues.size())).add(uri);
-    }
+    // should add the uri to a queue -> single implementations will choose probability criterion
+    public abstract void addToQueue(URI uri, List<ConcurrentLinkedQueue<URI>> queues);
 
-    public void addToQueueHighPriority(URI uri, List<ConcurrentLinkedQueue<URI>> queues) {
-        Random random = new Random();
-        queues.get(random.nextInt(queues.size() / 2) + queues.size() - queues.size() / 2).add(uri);
-    }
+    // should add the uri to a high priority queue
+    public abstract void addToQueueHighPriority(URI uri, List<ConcurrentLinkedQueue<URI>> queues);
 
 }

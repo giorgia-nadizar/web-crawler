@@ -1,5 +1,7 @@
 package crawling;
 
+import main.Config;
+
 import java.net.*;
 import java.util.Collections;
 import java.util.Set;

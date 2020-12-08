@@ -1,3 +1,5 @@
+package main;
+
 import crawling.*;
 import duplicateDetection.DuplicateFinder;
 import io.lettuce.core.RedisConnectionException;
@@ -15,9 +17,10 @@ public class Main {
             System.out.println("After starting the redis server, the crawler will need to be manually restarted");
             System.exit(0);
         }
+        Prioritiser prioritiser = new SimplePrioritiser(Config.NUMBER_OF_FRONT_QUEUES);
         VisitedPages visitedPages = new VisitedPages();
-        //Frontier frontier = new Frontier(10, "https://www.amazon.it/", "https://bartoli.inginf.units.it/", "http://univ.trieste.it/", "https://it.wikipedia.org/wiki/Information_retrieval");
-        Frontier frontier = new Frontier(10, "http://spidertrap.altervista.org/");
+        //Frontier frontier = new Frontier(prioritiser, "https://www.amazon.it/", "https://bartoli.inginf.units.it/", "http://univ.trieste.it/", "https://it.wikipedia.org/wiki/Information_retrieval");
+        Frontier frontier = new Frontier(prioritiser, "http://spidertrap.altervista.org/");
         Thread[] spiders = new Thread[Config.NUMBER_OF_SPIDERS];
         Config.STOP_TIME_MILLIS = System.currentTimeMillis() + Config.MAX_RUNTIME_MILLIS;
         long initialTime = System.currentTimeMillis();
