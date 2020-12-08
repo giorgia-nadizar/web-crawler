@@ -1,2 +1,4 @@
 *.txt
 JavaDocs/*
+index-files
+script-dir
