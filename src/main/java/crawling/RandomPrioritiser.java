@@ -7,9 +7,9 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 
 // simplest implementation of Prioritiser
 // other implementations are welcome to substitute this
-public class SimplePrioritiser extends Prioritiser {
+public class RandomPrioritiser extends Prioritiser {
 
-    public SimplePrioritiser(int numberOfFrontQueues) {
+    public RandomPrioritiser(int numberOfFrontQueues) {
         super(numberOfFrontQueues);
     }
 
