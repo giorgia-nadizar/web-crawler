@@ -133,8 +133,8 @@ public class Frontier {
         updateHeap(host, delayMillis);
     }
 
-    // removes URI from pending
-    public void removeVisitedURI(URI uri) {
+    // removes uri from pending
+    public void removeVisitedURL(URI uri) {
         pendingUrls.remove(uri);
     }
 

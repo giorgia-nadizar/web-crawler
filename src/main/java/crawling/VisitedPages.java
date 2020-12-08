@@ -40,7 +40,7 @@ public class VisitedPages {
         return page.getUrl();
     }
 
-    public boolean addAndReturnIfModified(URI uri, String lastModified) {
+    public boolean addIfAbsentOrModified(URI uri, String lastModified) {
         boolean modified = true;
         Date lastMod = null;
         if (lastModified != null) {

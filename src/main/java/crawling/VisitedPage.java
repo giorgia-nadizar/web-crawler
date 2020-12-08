@@ -6,12 +6,18 @@ import java.net.URI;
 import java.util.Date;
 import java.util.Objects;
 
+// object used to keep track of last visited attribute and infer next scheduled crawl from it
 public class VisitedPage implements Comparable<VisitedPage> {
 
     private final URI url;
     private Date lastModified;
     private Date nextScheduledCrawl;
 
+    public VisitedPage(URI url) {
+        this.url = url;
+    }
+
+    // creates a visited page instance heuristically estimating next scheduled crawl
     public VisitedPage(URI url, Date lastModified) {
         long waitTimeBeforeNextCrawlMillis;
         this.url = url;
@@ -24,10 +30,6 @@ public class VisitedPage implements Comparable<VisitedPage> {
         nextScheduledCrawl = new Date(System.currentTimeMillis() + waitTimeBeforeNextCrawlMillis);
     }
 
-    public VisitedPage(URI url) {
-        this.url = url;
-    }
-
     public URI getUrl() {
         return url;
     }
@@ -35,7 +37,7 @@ public class VisitedPage implements Comparable<VisitedPage> {
     public Date getNextScheduledCrawl() {
         return nextScheduledCrawl;
     }
-
+    
     public boolean update(Date lastModified) {
         boolean modified = false;
         long waitTimeBeforeNextCrawlMillis;
@@ -70,6 +72,7 @@ public class VisitedPage implements Comparable<VisitedPage> {
         return Objects.hash(url);
     }
 
+    // method needed to implement the comparable interface: pages are sorted by next scheduled crawl
     @Override
     public int compareTo(VisitedPage other) {
         return this.getNextScheduledCrawl().compareTo(other.getNextScheduledCrawl());

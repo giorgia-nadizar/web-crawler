@@ -19,34 +19,32 @@ public class Spider extends Thread {
         this.storage = storage;
     }
 
+    // implements a web crawler
     @Override
     public void run() {
-        System.out.println("Hi! I am thread " + currentThread().getId());
-        while (System.currentTimeMillis() < Config.STOP_TIME_MILLIS) {
+        System.out.println("Spider thread " + currentThread().getId() + " launched...");    // start notification
+        while (!isInterrupted() && System.currentTimeMillis() < Config.STOP_TIME_MILLIS) {
             URI uri = frontier.getNextURL();
             if (uri == null) {
-                System.out.println("Empty frontier, thread " + currentThread().getId() + " will stop here");
                 break;
             }
             long responseTime = Config.MIN_WAIT_TIME_BEFORE_RECONTACTING_HOST_MILLIS;
             WebPage webPage = WebPageDownloader.fetch(uri);
-            // it might be null because not allowed by robots.txt or because of errors
+            // might be null because not allowed by robots.txt or because of errors
             if (webPage != null) {
                 Set<String> links = Collections.newSetFromMap(new ConcurrentHashMap<>());
-                // forward the content to the parser
                 String content = Parser.parse(webPage.getDocument(), links);
                 responseTime = webPage.getResponseTime();
-                // filter all found urls and add them to the frontier
                 visitedPages.filterAlreadyVisitedUrls(links);
                 frontier.insertURLs(links);
-                if (visitedPages.addAndReturnIfModified(uri, webPage.getLastModified()) && content != null) {
+                if (visitedPages.addIfAbsentOrModified(uri, webPage.getLastModified()) && content != null) {
                     storage.insertCrawlResult(uri, content);
                 }
             }
-            frontier.removeVisitedURI(uri);
+            frontier.removeVisitedURL(uri);
             frontier.addVisitedHostWithDelayForNextVisit(uri.getHost(), 10 * responseTime);
         }
-        System.out.println("Bye! Spider thread " + currentThread().getId() + " stops here.");
+        System.out.println("Spider thread " + currentThread().getId() + " finished!");    // end notification
     }
 
 }

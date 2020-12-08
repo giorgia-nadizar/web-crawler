@@ -1,4 +1,6 @@
-package crawling;// from https://www.programmersought.com/article/4084449403/
+// taken from https://www.programmersought.com/article/4084449403/ and adapted
+
+package crawling;
 
 import com.hankcs.hanlp.seg.common.Term;
 import com.hankcs.hanlp.tokenizer.StandardTokenizer;
@@ -12,37 +14,24 @@ import java.util.Map;
 
 public class SimHash {
 
-    private final static int hashBits = 64; // the number of hashes after the word segmentation
+    private final static int hashBits = 64; // number of hashes after the word segmentation
 
-    private static String normalize(String content) {
-        String[] strings = {" ", "\n", "\r", "\t", "\\r", "\\n", "\\t", "&nbsp;"};
-        for (String s : strings) {
-            content = content.replaceAll(s, "");
-        }
-        return content;
-    }
-
-    // Clear html tags
-    private static String cleanHtmlTags(String content) {
-        // If the input is HTML, the following will filter out all the HTML tags.
-        return Jsoup.clean(content, Whitelist.none()).toLowerCase();
-    }
-
-    // This is a hash calculation of the entire string
+    // calculates the simHash of the given text
     public static BigInteger simHash(String text) {
         text = normalize(cleanHtmlTags(text));
         List<Term> tokens = StandardTokenizer.segment(text);
-        int[] v = new int[hashBits];
+        int[] sumOfWeights = new int[hashBits];
         Map<String, Integer> partOfSpeechWeights = new HashMap<>();
-        partOfSpeechWeights.put("n", 2); //The weight given to the noun is 2
+        partOfSpeechWeights.put("n", 2); // weight given to noun is 2
         Map<String, String> stopNatures = new HashMap<>();
-        stopNatures.put("w", ""); //
+        stopNatures.put("w", "");
         int maxValueForWordOccurrences = 5;
         Map<String, Integer> wordOccurrences = new HashMap<>();
         for (Term term : tokens) {
+            System.out.println(term);
             String word = term.word;
             String wordNature = term.nature.toString();
-            // Filter overclocking words
+            // filter overclocking words
             if (wordOccurrences.containsKey(word)) {
                 int occurrences = wordOccurrences.get(word);
                 if (occurrences > maxValueForWordOccurrences) {
@@ -52,8 +41,7 @@ public class SimHash {
             } else {
                 wordOccurrences.put(word, 1);
             }
-            // Filter stop words
-            if (stopNatures.containsKey(wordNature)) {
+            if (stopNatures.containsKey(wordNature)) {     // filter stop words
                 continue;
             }
             int weight = 1; //add weight
@@ -64,31 +52,43 @@ public class SimHash {
             for (int i = 0; i < hashBits; i++) {
                 BigInteger bitmask = new BigInteger("1").shiftLeft(i);
                 if (hash.and(bitmask).signum() != 0) {
-                    // Here is the vector sum that computes all the features of the entire document
-                    v[i] += weight;
+                    sumOfWeights[i] += weight;
                 } else {
-                    v[i] -= weight;
+                    sumOfWeights[i] -= weight;
                 }
             }
         }
-        // conversion from array to binary big integer
         BigInteger fingerprint = new BigInteger("0");
-        for (int i = 0; i < hashBits; i++) {
-            if (v[i] >= 0) {
+        for (int i = 0; i < hashBits; i++) {     // conversion from array to binary big integer
+            if (sumOfWeights[i] >= 0) {
                 fingerprint = fingerprint.add(new BigInteger("1").shiftLeft(i));
             }
         }
         return fingerprint;
     }
 
+    // converts all possible separators into spaces
+    private static String normalize(String content) {
+        String[] strings = {"\n", "\r", "\t", "\\r", "\\n", "\\t", "&nbsp;"};
+        for (String s : strings) {
+            content = content.replaceAll(s, " ");
+        }
+        return content;
+    }
+
+    // clear html tags from the content
+    private static String cleanHtmlTags(String content) {
+        return Jsoup.clean(content, Whitelist.none()).toLowerCase();
+    }
+
+    // calculate the hash of the given string
     private static BigInteger hash(String source) {
         if (source == null || source.length() == 0) {
             return new BigInteger("0");
         } else {
-            // When the length of the source is too short, the hash algorithm will be invalidated,
-            // so it is necessary to compensate for too short words.
             StringBuilder sourceBuilder = new StringBuilder(source);
             while (sourceBuilder.length() < 3) {
+                // pad the original string (necessary for the hash to work)
                 sourceBuilder.append(sourceBuilder.charAt(0));
             }
             source = sourceBuilder.toString();
@@ -109,6 +109,7 @@ public class SimHash {
         }
     }
 
+    // computes the hamming distance between to simHash values
     public static int hammingDistance(BigInteger simHash1, BigInteger simHash2) {
         BigInteger m = new BigInteger("1").shiftLeft(hashBits).subtract(
                 new BigInteger("1"));
@@ -121,6 +122,7 @@ public class SimHash {
         return tot;
     }
 
+    // returns the percentage of semblance between two simHash values using the hamming distance
     public static double getSemblance(BigInteger simHash1, BigInteger simHash2) {
         double i = hammingDistance(simHash1, simHash2);
         return 1 - i / hashBits;

@@ -14,15 +14,20 @@ public class Refresher extends Thread {
         this.visitedPages = visitedPages;
     }
 
+    // gets a URL to fetch again from the visited ones and adds it to the frontier with high priority
     @Override
     public void run() {
-        System.out.println("Hi! I am thread " + currentThread().getId() + ". I will be the refresher!");
+        System.out.println("Refresher thread " + currentThread().getId() + " launched...");    // start notification
         while (!isInterrupted() && System.currentTimeMillis() < Config.STOP_TIME_MILLIS) {
             URI pageToRefresh = visitedPages.getNextPageToRefresh();
             if (pageToRefresh != null) {
                 frontier.insertSeenURLToRefresh(pageToRefresh);
-            } else if (!isInterrupted() && (System.currentTimeMillis() + Config.REFRESHER_WAIT_BEFORE_CHECKING_PAGE_TO_REFRESH_MILLIS)
-                    < Config.STOP_TIME_MILLIS) {
+                continue;
+            }
+            // checks if it's ok to sleep or if it will wake too late
+            if (!isInterrupted() &&
+                    (System.currentTimeMillis() + Config.REFRESHER_WAIT_BEFORE_CHECKING_PAGE_TO_REFRESH_MILLIS)
+                            < Config.STOP_TIME_MILLIS) {
                 try {
                     Thread.sleep(Config.REFRESHER_WAIT_BEFORE_CHECKING_PAGE_TO_REFRESH_MILLIS);
                 } catch (InterruptedException e) {
@@ -32,7 +37,7 @@ public class Refresher extends Thread {
                 break;
             }
         }
-        System.out.println("Bye! Refresher thread " + currentThread().getId() + " stops here.");
+        System.out.println("Refresher thread " + currentThread().getId() + " finished!");    // end notification
     }
 
 }
