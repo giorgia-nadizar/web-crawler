@@ -17,7 +17,7 @@ public class Frontier {
     private final ConcurrentHashMap<String, ConcurrentLinkedQueue<URI>> backQueues;
     private final PriorityBlockingQueue<HeapEntry> heap;
     private final ConcurrentHashMap<String, Integer> urlsPerHost;
-    private final Set<URI> pendingUrls;
+    private final Set<URI> pendingUrls;     // stores all urls in the frontier (regardless of which queue) or in process
 
     // creates all the needed structures and inserts seedPages into the front queues
     public Frontier(Prioritiser prioritiser, String... seedPages) {
@@ -59,7 +59,7 @@ public class Frontier {
         if (url == null || url.length() == 0) {
             return;
         }
-        if (url.length() > Config.MAX_URL_SIZE) {      // for robustness
+        if (url.length() > Config.MAX_URL_LENGTH) {      // for robustness
             return;
         }
         URI uri;
