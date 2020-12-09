@@ -18,8 +18,7 @@ public class Main {
         }
         Prioritiser prioritiser = new RandomPrioritiser(Config.NUMBER_OF_FRONT_QUEUES);
         VisitedPages visitedPages = new VisitedPages();
-        //Frontier frontier = new Frontier(prioritiser, "https://www.amazon.it/", "https://bartoli.inginf.units.it/", "http://univ.trieste.it/", "https://it.wikipedia.org/wiki/Information_retrieval");
-        Frontier frontier = new Frontier(prioritiser, "http://spidertrap.altervista.org/");
+        Frontier frontier = new Frontier(prioritiser, Config.SEED_PAGES);
 
         System.out.println("Crawler starting...");
         Thread[] spiders = new Thread[Config.NUMBER_OF_SPIDERS];
