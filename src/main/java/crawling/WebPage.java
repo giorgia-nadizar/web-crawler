@@ -2,6 +2,7 @@ package crawling;
 
 import org.jsoup.nodes.Document;
 
+// simple web-page representation of the document, last-modified attribute and response time (time needed to download it)
 public class WebPage {
 
     private long responseTime;

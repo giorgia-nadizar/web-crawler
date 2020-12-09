@@ -12,18 +12,20 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.PriorityBlockingQueue;
 
+// in memory storage of visited pages to keep track of their last-visited time and next estimated crawl
 public class VisitedPages {
 
     private final SimpleDateFormat format = new SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss z", Locale.US);
     private final PriorityBlockingQueue<VisitedPage> visitedPages;
-    private final ConcurrentHashMap<URI, VisitedPage> pendingPages;
+    private final ConcurrentHashMap<URI, VisitedPage> pendingPages;     // visited but currently in the frontier to be re-crawled
 
     public VisitedPages() {
         visitedPages = new PriorityBlockingQueue<>();
         pendingPages = new ConcurrentHashMap<>();
     }
 
-    // this method doesn't need to be synchronized as only one thread will access it
+    // returns the visited page with minimum re-crawl date or null if the re-crawl date is too far in time
+    // not synchronized because there is only one refresher thread
     public URI getNextPageToRefresh() {
         VisitedPage page = visitedPages.peek();
         if (page == null || (page.getNextScheduledCrawl().getTime() - (new Date()).getTime()) > Config.MAX_WAIT_REFRESHER) {
@@ -41,37 +43,34 @@ public class VisitedPages {
     }
 
     public boolean addIfAbsentOrModified(URI uri, String lastModified) {
-        boolean modified = true;
-        Date lastMod = null;
+        boolean newOrUpdated = true;
+        Date lastModifiedDate = null;
         if (lastModified != null) {
             try {
                 synchronized (format) {
-                    lastMod = format.parse(lastModified);
+                    lastModifiedDate = format.parse(lastModified);
                 }
             } catch (ParseException e) {
-                //e.printStackTrace();
+                lastModifiedDate = null;
             }
         }
-        VisitedPage visitedPage;
-        if ((visitedPage = pendingPages.get(uri)) != null) {
-            modified = visitedPage.update(lastMod);
+        VisitedPage visitedPage = pendingPages.get(uri);
+        if (visitedPage != null) {
+            newOrUpdated = visitedPage.update(lastModifiedDate);
         } else {
-            visitedPage = new VisitedPage(uri, lastMod);
+            visitedPage = new VisitedPage(uri, lastModifiedDate);
         }
-        // this row will probably never get executed, just make sure we avoid duplications
-        visitedPages.remove(visitedPage);
+        visitedPages.remove(visitedPage);   // make sure duplications are avoided
         visitedPages.put(visitedPage);
-        return modified;
+        return newOrUpdated;
     }
 
+    // removes already visited urls
     public void filterAlreadyVisitedUrls(Set<String> urls) {
         urls.removeIf(this::alreadyVisited);
     }
 
-    //receives URLS
-    //for each checks if it has been visited already
-    //then checks if the host has a robot policy specified (we'll have a table for that)
-    //then forwards them to the frontier to add them
+    // returns true if the url is visited (or pending -> already in the frontier again)
     private boolean alreadyVisited(String url) {
         URI uri;
         try {
