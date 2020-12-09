@@ -2,7 +2,7 @@
 Simple Java implementation of a Web Crawler with Mercator Frontier, followed by a clustering step to group similar web-pages according to the SimHash of their content.
 
 ## Features
-* Robustness (see the behaviour when using "http://spidertrap.altervista.org/" as seed page)
+* Robustness (see the behaviour when using http://spidertrap.altervista.org/ as seed page)
 * Fairness (respects robots.txt requirements and avoids too frequent reconnections to the same host)
 * Multi-thread
 * Tries to keep stored web-pages fresh via a heuristic estimation of their change rate
