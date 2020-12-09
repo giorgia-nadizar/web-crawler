@@ -17,7 +17,7 @@ public class VisitedPage implements Comparable<VisitedPage> {
         this.url = url;
     }
 
-    // creates a visited page instance heuristically estimating next scheduled crawl
+    // creates a visited page instance, heuristically estimating next scheduled crawl
     public VisitedPage(URI url, Date lastModified) {
         long waitTimeBeforeNextCrawlMillis;
         this.url = url;
@@ -37,7 +37,8 @@ public class VisitedPage implements Comparable<VisitedPage> {
     public Date getNextScheduledCrawl() {
         return nextScheduledCrawl;
     }
-    
+
+    // updates a page's last visited attribute and estimates next scheduled crawl and returns if it's a real update
     public boolean update(Date lastModified) {
         boolean modified = false;
         long waitTimeBeforeNextCrawlMillis;
@@ -45,8 +46,7 @@ public class VisitedPage implements Comparable<VisitedPage> {
             this.lastModified = null;
             waitTimeBeforeNextCrawlMillis = Config.DEFAULT_WAIT_TIME_BEFORE_RECRAWL;
         } else {
-            // if the page was not modified increase the wait time
-            if (this.lastModified.equals(lastModified)) {
+            if (lastModified.equals(this.lastModified)) {   // page was not modified -> increase the wait time
                 waitTimeBeforeNextCrawlMillis = (new Date()).getTime() - lastModified.getTime();
             } else {
                 modified = true;

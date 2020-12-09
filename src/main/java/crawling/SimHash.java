@@ -24,13 +24,16 @@ public class SimHash {
         Map<String, Integer> partOfSpeechWeights = new HashMap<>();
         partOfSpeechWeights.put("n", 2); // weight given to noun is 2
         Map<String, String> stopNatures = new HashMap<>();
-        stopNatures.put("w", "");
+        stopNatures.put("w", "");   // punctuation
+        stopNatures.put("m", "");   // numbers
         int maxValueForWordOccurrences = 5;
         Map<String, Integer> wordOccurrences = new HashMap<>();
         for (Term term : tokens) {
-            System.out.println(term);
             String word = term.word;
             String wordNature = term.nature.toString();
+            if (stopNatures.containsKey(wordNature)) {     // filter stop words
+                continue;
+            }
             // filter overclocking words
             if (wordOccurrences.containsKey(word)) {
                 int occurrences = wordOccurrences.get(word);
@@ -40,9 +43,6 @@ public class SimHash {
                 wordOccurrences.put(word, occurrences + 1);
             } else {
                 wordOccurrences.put(word, 1);
-            }
-            if (stopNatures.containsKey(wordNature)) {     // filter stop words
-                continue;
             }
             int weight = 1; //add weight
             if (partOfSpeechWeights.containsKey(wordNature)) {

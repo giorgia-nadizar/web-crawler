@@ -15,7 +15,7 @@ public class Main {
             System.out.println("Redis server refused connection, probably it's not running");
             System.out.println("To start the server type \"sudo service redis-server restart\" in the shell");
             System.out.println("After starting the redis server, the crawler will need to be manually restarted");
-            System.exit(0);
+            return;
         }
         Prioritiser prioritiser = new RandomPrioritiser(Config.NUMBER_OF_FRONT_QUEUES);
         VisitedPages visitedPages = new VisitedPages();
@@ -43,17 +43,7 @@ public class Main {
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
         }*/
-
-        // rough termination
-        /*try {
-            Thread.sleep(Config.MAX_RUNTIME_MILLIS);
-            for (Thread spider : spiders) {
-                spider.interrupt();
-            }
-            r.interrupt();
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-        }*/
+        
         // +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
         // soft termination -> inevitable time drift if rough not activated
