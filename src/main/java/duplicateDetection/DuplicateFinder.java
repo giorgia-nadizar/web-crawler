@@ -2,13 +2,14 @@ package duplicateDetection;
 
 import main.Config;
 import crawling.Storage;
-import org.christopherfrantz.dbscan.DBSCANClusterer;
-import org.christopherfrantz.dbscan.DBSCANClusteringException;
+import org.christopherfrantz.dbscan.DBSCANClusterer;    // from https://github.com/chrfrantz/DBSCAN
+import org.christopherfrantz.dbscan.DBSCANClusteringException;  // from https://github.com/chrfrantz/DBSCAN
 
 import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.List;
 
+// clusters urls according to the hamming distance between them
 public class DuplicateFinder {
 
     Storage storage;
@@ -19,6 +20,7 @@ public class DuplicateFinder {
         loadUrlsAndSimHashes();
     }
 
+    // retrieves all stored urls and corresponding simHash values in memory
     private void loadUrlsAndSimHashes() {
         List<String> storedUrls = storage.getAllKeys();
         simHashes = new ArrayList<>();
@@ -29,6 +31,7 @@ public class DuplicateFinder {
         }
     }
 
+    // performs clustering (with DBSCAN) of the urls and updates the storage
     public ArrayList<ArrayList<UrlWithSimHash>> cluster() {
         try {
             DBSCANClusterer<UrlWithSimHash> clusterer =
@@ -37,11 +40,11 @@ public class DuplicateFinder {
             storage.addClusterIds(clusters);
             return clusters;
         } catch (DBSCANClusteringException e) {
-            e.printStackTrace();
             return null;
         }
     }
 
+    // performs clustering and prints the results
     public void clusterAndPrint() {
         ArrayList<ArrayList<UrlWithSimHash>> clusters = cluster();
         System.out.println("Clusters found: " + clusters.size());

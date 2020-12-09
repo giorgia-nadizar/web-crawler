@@ -3,8 +3,7 @@ package duplicateDetection;
 import crawling.SimHash;
 import org.christopherfrantz.dbscan.DistanceMetric;
 
-import java.math.BigInteger;
-
+// distance metrics to be used in the clustering
 public class UrlSimHashDistanceMetrics implements DistanceMetric<UrlWithSimHash> {
 
     @Override

@@ -2,6 +2,7 @@ package duplicateDetection;
 
 import java.math.BigInteger;
 
+// utility object to keep urls and simHashes together in the clustering
 public class UrlWithSimHash {
 
     private String url;
