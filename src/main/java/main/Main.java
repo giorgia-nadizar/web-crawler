@@ -28,6 +28,8 @@ public class Main {
         }
         Refresher r = new Refresher(frontier, visitedPages);
         r.start();
+
+        // hard way to stop the threads if we want them to stop "precisely" (stop should not be used in production)
         Thread.sleep(Config.MAX_RUNTIME_MILLIS);
         r.stop();
         for (Thread spider : spiders) {
@@ -36,7 +38,7 @@ public class Main {
         }
         r.join();
 
-        // proper termination of threads, however it takes time with many threads
+        // proper wait for termination, however it takes time with many threads
         /*
         for (Thread spider : spiders) {
             spider.join();
