@@ -123,9 +123,8 @@ public class SimHash {
     }
 
     // returns the percentage of semblance between two simHash values using the hamming distance
-    public static double getSemblance(BigInteger simHash1, BigInteger simHash2) {
-        double i = hammingDistance(simHash1, simHash2);
-        return 1 - i / hashBits;
+    public static double normalizedHammingDistance(BigInteger simHash1, BigInteger simHash2) {
+        return hammingDistance(simHash1, simHash2) / (double) hashBits;
     }
 
 }

@@ -172,8 +172,8 @@ public class Frontier {
                 if (waitAttempts >= Config.MAX_WAIT_ATTEMPTS) {
                     throw new EmptyFrontQueuesException("All front queues are empty, impossible to draw url");
                 }
-                System.out.println("The frontier seems to be empty, other " +
-                        (Config.MAX_WAIT_ATTEMPTS - waitAttempts) + " attempt(s) will be made");
+                System.out.println("The frontier seems to be empty, " +
+                        (Config.MAX_WAIT_ATTEMPTS - waitAttempts) + " more attempt(s) will be made");
                 try {
                     Thread.sleep(Config.WAIT_BEFORE_RETRY_MILLIS);
                     waitAttempts += 1;

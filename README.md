@@ -12,7 +12,7 @@ Redis.io key-value store must be installed. Available from https://redis.io/down
 
 ## Usage
 
-* Before executing, you need to make sure your redis is fully empty. To do so you need to start the server (sudo service redis-server restart), start the client (redis-cli) and issue the FLUSHALL command.
+* Before executing, you need to make sure your redis is fully empty. To do so you need to start the server (sudo service redis-server start), start the client (redis-cli) and issue the FLUSHALL command.
 
 * Then you can simply compile and run the Crawler's Main class. Before any run make sure to always empty redis.
 

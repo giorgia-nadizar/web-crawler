@@ -1,6 +1,6 @@
 package crawling;
 
-import com.panforge.robotstxt.RobotsTxt;
+import com.panforge.robotstxt.RobotsTxt;    // from https://github.com/pandzel/RobotsTxt
 import org.jsoup.Connection;
 import org.jsoup.helper.HttpConnection;
 
