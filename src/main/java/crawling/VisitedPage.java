@@ -55,7 +55,11 @@ public class VisitedPage implements Comparable<VisitedPage> {
             }
             this.lastModified = lastModified;
         }
-        nextScheduledCrawl = new Date(System.currentTimeMillis() + waitTimeBeforeNextCrawlMillis);
+        if (modified) {
+            nextScheduledCrawl = new Date(lastModified.getTime() + waitTimeBeforeNextCrawlMillis);
+        } else {
+            nextScheduledCrawl = new Date(System.currentTimeMillis() + waitTimeBeforeNextCrawlMillis);
+        }
         return modified;
     }
 

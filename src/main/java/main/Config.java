@@ -3,10 +3,10 @@ package main;
 public class Config {
 
     //general parameters
-    public static int NUMBER_OF_SPIDERS = 600;
+    public static int NUMBER_OF_SPIDERS = 1;
     public static int NUMBER_OF_FRONT_QUEUES = 10;
-    public static String[] SEED_PAGES = {"https://www.amazon.it/", "https://bartoli.inginf.units.it/", "http://univ.trieste.it/", "https://it.wikipedia.org/wiki/Information_retrieval"};
-    //public static String[] SEED_PAGES = {"http://spidertrap.altervista.org/"};    // to test robustness
+    //public static String[] SEED_PAGES = {"https://www.amazon.it/", "https://bartoli.inginf.units.it/", "http://univ.trieste.it/", "https://it.wikipedia.org/wiki/Information_retrieval"};
+    public static String[] SEED_PAGES = {"http://spidertrap.altervista.org/"};    // to test robustness
     public static int MAX_RUN_TIME_MINUTES = 2;
     public static long MAX_RUNTIME_MILLIS = 1000 * 60 * MAX_RUN_TIME_MINUTES;
     public static long STOP_TIME_MILLIS;

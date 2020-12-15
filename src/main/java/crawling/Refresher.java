@@ -31,7 +31,8 @@ public class Refresher extends Thread {
                 try {
                     Thread.sleep(Config.REFRESHER_WAIT_BEFORE_CHECKING_PAGE_TO_REFRESH_MILLIS);
                 } catch (InterruptedException e) {
-                    Thread.currentThread().interrupt();
+                    break;
+                    //Thread.currentThread().interrupt();
                 }
             } else {
                 break;

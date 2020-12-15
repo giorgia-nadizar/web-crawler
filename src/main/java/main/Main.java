@@ -30,22 +30,18 @@ public class Main {
         r.start();
 
         // hard way to stop the threads if we want them to stop "precisely" (stop should not be used in production)
-        Thread.sleep(Config.MAX_RUNTIME_MILLIS);
-        r.stop();
+        /*Thread.sleep(Config.MAX_RUNTIME_MILLIS);
         for (Thread spider : spiders) {
             spider.stop();
-            spider.join();
         }
-        r.join();
+        r.stop();*/
 
         // proper wait for termination, however it takes time with many threads
-        /*
         for (Thread spider : spiders) {
             spider.join();
         }
         r.interrupt();  // if all spiders have finished the refresher must be interrupted
         r.join();
-        */
 
         System.out.println("Crawling finished, now searching for duplicates...");
         DuplicateFinder duplicateFinder = new DuplicateFinder(storage);
